@@ -73,7 +73,7 @@ def main(args):
     # Quantization 
     logging.info("=== start quantization ===")
     tick = time.time() 
-    cache_dataloader = f'dataloader_{args.cache_dir}/{args.model_name_or_path.split("/")[-1]}_{args.calib_dataset}_n{args.nsamples}len{args.seqlen}.cache'
+    cache_dataloader = f'{args.cache_dir}/dataloader_{args.model_name_or_path.split("/")[-1]}_{args.calib_dataset}_n{args.nsamples}len{args.seqlen}.cache'
     if os.path.exists(cache_dataloader):
         dataloader = torch.load(cache_dataloader)
         logging.info(f"load calibration data from {cache_dataloader}")
