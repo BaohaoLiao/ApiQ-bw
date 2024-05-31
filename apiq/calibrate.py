@@ -27,8 +27,8 @@ def calibrate(model, args, dataloader, logging=None):
     if ("llama" in args.model_family) or ("mistral" in  args.model_family):
         is_llama = True
         layers = model.base_model.model.model.layers
-        model.base_model.model.model.embed_tokens = model.base_model.model.embed_tokens.to(args.device)
-        model.base_model.model.model.norm = model.base_model.model.norm.to(args.device)
+        model.base_model.model.model.embed_tokens = model.base_model.model.model.embed_tokens.to(args.device)
+        model.base_model.model.model.norm = model.base_model.model.model.norm.to(args.device)
     else:
         raise ValueError("Only support llama/mistral now")
     
