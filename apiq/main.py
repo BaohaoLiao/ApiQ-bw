@@ -62,7 +62,7 @@ def main(args):
     peft_config_kwargs = json.loads(args.peft_args)
     if args.peft_method == "LoRA":
         target_modules = ["q_proj", "k_proj", "v_proj", "o_proj", "up_proj", "gate_proj", "down_proj"]
-        peft_config = peft.LoraConfig(task_type="CAUSAL_LM", inference_mode=False, target_modules=target_modules, **peft_config_kwargs)
+        peft_config = peft.LoraConfig(task_type="CAUSAL_LM", inference_mode=False, target_modules=target_modules,  **peft_config_kwargs)
         model = peft.get_peft_model(model, peft_config)
 
     assert isinstance(model.base_model.model, (LlamaPreTrainedModel, MistralPreTrainedModel))
@@ -88,7 +88,7 @@ def main(args):
         torch.save(dataloader, cache_dataloader)    
 
     calibrate(model, args, dataloader, logging=logging)
-    logging.info(time.time() - tick)
+    logging.info(f"Time for quantization: {time.time() - tick}")
     evaluate(model, tokenizer, args, logging)
 
     return

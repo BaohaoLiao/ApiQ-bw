@@ -43,11 +43,11 @@ def evaluate(model, tokenizer, args, logging):
                 if "llama" in args.model_family or "mistral" in args.model_family:
                     outputs = model.base_model.model.model(batch)
                 hidden_states = outputs[0]
-                logits = model.base_model.model.model.lm_head(hidden_states)
+                logits = model.base_model.model.lm_head(hidden_states)
                 shift_logits = logits[:, :-1, :]
                 shift_labels = testenc[:, (i * args.seqlen) : ((i + 1) * args.seqlen)][
                     :, 1:
-                ].to(model.base_model.model.model.lm_head.weight.device)
+                ].to(model.base_model.model.lm_head.weight.device)
                 loss_fct = nn.CrossEntropyLoss()
                 loss = loss_fct(
                     shift_logits.view(-1, shift_logits.size(-1)),
