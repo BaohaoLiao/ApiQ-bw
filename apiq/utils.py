@@ -1,7 +1,7 @@
 from math import inf
 from collections import OrderedDict
 import torch
-from quant_linear import QuantLinear
+from apiq.quant_linear import QuantLinear
 
 
 def register_scales_and_zeros(model):
