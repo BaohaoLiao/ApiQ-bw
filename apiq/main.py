@@ -6,6 +6,7 @@ import random
 import json
 import time
 import numpy as np
+from pathlib import Path
 
 import torch
 import peft
@@ -39,8 +40,10 @@ def main(args):
 
     args.model_family = args.model_name_or_path.split("/")[-1].split("-")[0].lower()
     assert args.model_family in MODEL_FAMILY, f"Currently don't support {args.model_family}"
-    if not os.path.exists(args.save_dir):
-        os.makedirs(args.save_dir)
+    if args.cache_dir:
+        Path(args.cache_dir).mkdir(parents=True, exist_ok=True)
+    if args.save_dir:
+        Path(args.save_dir).mkdir(parents=True, exist_ok=True)
 
     # Load model and tokenizer
     args.deivce = torch.device("cuda" if torch.cuda.is_available() else "cpu")
