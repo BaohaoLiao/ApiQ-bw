@@ -24,7 +24,7 @@ def evaluate(model, tokenizer, args, logging):
                     dataset,
                     tokenizer,
                     seed=args.seed,
-                    seqlen=2048,
+                    seqlen=model.config.max_position_embeddings,
                 )
                 torch.save(testloader, cache_testloader)
 
