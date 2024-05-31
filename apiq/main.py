@@ -39,6 +39,8 @@ def main(args):
 
     args.model_family = args.model_name_or_path.split("/")[-1].split("-")[0].lower()
     assert args.model_family in MODEL_FAMILY, f"Currently don't support {args.model_family}"
+    if not os.path.exists(args.save_dir):
+        os.makedirs(args.save_dir)
 
     # Load model and tokenizer
     args.deivce = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -56,7 +58,8 @@ def main(args):
     }
     peft_config_kwargs = json.loads(args.peft_args)
     if args.peft_method == "LoRA":
-        peft_config = peft.LoraConfig(task_type="CAUSAL_LM", inference_mode=False, target_modules=args.target_modules, **peft_config_kwargs)
+        target_modules = ["q_proj", "k_proj", "v_proj", "o_proj", "up_proj", "gate_proj", "down_proj"]
+        peft_config = peft.LoraConfig(task_type="CAUSAL_LM", inference_mode=False, target_modules=target_modules, **peft_config_kwargs)
         model = peft.get_peft_model(model, peft_config)
 
     assert isinstance(model.base_model.model, (LlamaPreTrainedModel, MistralPreTrainedModel))
@@ -93,7 +96,7 @@ def arg_parse():
     parser.add_argument("--seed", type=int, default=42)
     # Model
     parser.add_argument("--model_name_or_path", type=str)
-    parser.add_argument("--target_modules", type=str, required=True)
+    #parser.add_argument("--target_modules", type=str, required=True)
     parser.add_argument("--peft_method", type=str, default="LoRA", choices=["LoRA"])
     parser.add_argument("--peft_args", type=str, default="{'lora_alpha': 16, 'r': 64, 'lora_dropout': 0.}", choices=["LoRA"])
     parser.add_argument(
@@ -110,12 +113,12 @@ def arg_parse():
     parser.add_argument("--symmetric", default=False, action="store_true", help="Symmetric quantization")
     parser.add_argument("--disable_zero_point", default=False, action="store_true", help="Quantization without zero_point")
     # Training
-    parser.add_argument("--lwc_lr", type=float, default=1e-2, help="Learning rate for weight quantization factors")
-    parser.add_argument("--peft_lr", type=float, default=1e-2, help="Learning rate for PEFT parameters")
-    parser.add_argument("--lwc_wd", type=float, default=0, help="Weight decay for weight quantization factors")
-    parser.add_argument("--peft_wd", type=float, default=0, help="Weight decay for PEFT parameters")
-    parser.add_argument("--epochs", type=int, default=10)
-    parser.add_argument("--batch_size", type=int, default=1)
+    parser.add_argument("--lwc_lr", type=float, default=0.005, help="Learning rate for weight quantization factors")
+    parser.add_argument("--peft_lr", type=float, default=0.001, help="Learning rate for PEFT parameters")
+    parser.add_argument("--lwc_wd", type=float, default=0.1, help="Weight decay for weight quantization factors")
+    parser.add_argument("--peft_wd", type=float, default=0.1, help="Weight decay for PEFT parameters")
+    parser.add_argument("--epochs", type=int, default=20)
+    parser.add_argument("--batch_size", type=int, default=8)
     # Output
     parser.add_argument("--cache_dir", default="./cache", type=str, help="Cache dir of dataset, leading to faster debug")
     parser.add_argument("--resume", type=str, default=None)
