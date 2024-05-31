@@ -111,6 +111,7 @@ def calibrate(model, args, dataloader, logging=None):
 
         # obtain output of full-precision model
         # TODO: check
+        print("FP ...")
         set_quant_state(qlayer, weight_quant=False)
         if args.epochs > 0:
             with torch.no_grad():
@@ -144,6 +145,7 @@ def calibrate(model, args, dataloader, logging=None):
                     index = j * args.batch_size
                     with traincast():
                         # TODO: check
+                        print("Quant ...")
                         set_quant_state(qlayer, weight_quant=True)
                         quant_out = qlayer(
                             quant_inps[index:index+args.batch_size,], 
@@ -151,8 +153,6 @@ def calibrate(model, args, dataloader, logging=None):
                             position_ids=position_ids
                         )[0]
                         loss = loss_func(fp_inps[index:index+args.batch_size,], quant_out)
-                        print("quant: ", quant_out)
-                        print("fp: ", fp_inps[index:index+args.batch_size,])
 
                     if not math.isfinite(loss.item()):
                         logging.info("Loss is NAN, stopping training")
