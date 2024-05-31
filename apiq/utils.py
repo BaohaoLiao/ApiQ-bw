@@ -14,6 +14,7 @@ def set_quant_state(self, weight_quant: bool = False):
     self.use_weight_quant = weight_quant
     for m in self.modules():
         if isinstance(m, QuantLinear):
+            print("Linear")
             m.set_quant_state(weight_quant)
 
 def get_lwc_parameters(model):
