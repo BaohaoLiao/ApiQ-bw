@@ -26,9 +26,9 @@ def calibrate(model, args, dataloader, logging=None):
     is_llama = False
     if ("llama" in args.model_family) or ("mistral" in  args.model_family):
         is_llama = True
-        layers = model.base_model.model.layers
-        model.base_model.model.embed_tokens = model.base_model.model.embed_tokens.to(args.device)
-        model.base_model.model.norm = model.base_model.model.norm.to(args.device)
+        layers = model.base_model.model.model.layers
+        model.base_model.model.model.embed_tokens = model.base_model.model.embed_tokens.to(args.device)
+        model.base_model.model.model.norm = model.base_model.model.norm.to(args.device)
     else:
         raise ValueError("Only support llama/mistral now")
     
@@ -70,8 +70,8 @@ def calibrate(model, args, dataloader, logging=None):
     layers[0] = layers[0].module
     layers[0] = layers[0].cpu()
     if "llama" in args.model_family or "mistral" in args.model_family:
-        model.base_model.model.embed_tokens = model.base_model.model.embed_tokens.cpu()
-        model.base_model.model.norm = model.base_model.model.norm.cpu()
+        model.base_model.model.model.embed_tokens = model.base_model.model.model.embed_tokens.cpu()
+        model.base_model.model.model.norm = model.base_model.model.model.norm.cpu()
     else:
         raise ValueError("Only support llama/mistral now")
     torch.cuda.empty_cache()
