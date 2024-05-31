@@ -55,6 +55,8 @@ def evaluate(model, tokenizer, args, logging):
                 )
                 neg_log_likelihood = loss.float() * args.seqlen
                 nlls.append(neg_log_likelihood)
+                if i == args.limit:
+                    break
 
             ppl = torch.exp(torch.stack(nlls).sum() / (nsamples * args.seqlen))
             logging.info(f'{dataset} : {ppl.item()}')

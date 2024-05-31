@@ -129,6 +129,7 @@ def arg_parse():
     parser.add_argument("--save_dir", default="./models/", type=str, help="Direction for saving model")
     # Other
     parser.add_argument("--eval_ppl", default=False, action="store_true")
+    parser.add_argument("--limit", type=int, default=-1, help="Number of samples in evaluation for debug purpose.")
 
     args = parser.parse_args()
     return args
