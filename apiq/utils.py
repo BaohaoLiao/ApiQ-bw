@@ -13,7 +13,7 @@ def set_quant_state(self, weight_quant: bool = False):
     # setting weight quantization here does not affect actual forward pass
     self.use_weight_quant = weight_quant
     for n, m in self.named_modules():
-        print(n)
+        print(n, type(m))
         if isinstance(m, QuantLinear):
             m.set_quant_state(weight_quant)
 
