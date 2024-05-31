@@ -12,9 +12,9 @@ def register_scales_and_zeros(model):
 def set_quant_state(self, weight_quant: bool = False):
     # setting weight quantization here does not affect actual forward pass
     self.use_weight_quant = weight_quant
-    for m in self.modules():
+    for n, m in self.named_modules():
+        print(n)
         if isinstance(m, QuantLinear):
-            print("Linear")
             m.set_quant_state(weight_quant)
 
 def get_lwc_parameters(model):
