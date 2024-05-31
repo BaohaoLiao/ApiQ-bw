@@ -96,7 +96,7 @@ def main(args):
 
 def arg_parse():
     parser = argparse.ArgumentParser(description="Quantize a model")
-    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--seed", type=int, default=2)
     # Model
     parser.add_argument("--model_name_or_path", type=str)
     #parser.add_argument("--target_modules", type=str, required=True)
