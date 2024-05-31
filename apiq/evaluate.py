@@ -14,7 +14,7 @@ def evaluate(model, tokenizer, args, logging):
     
     if args.eval_ppl:
         for dataset in ["wikitext2", "c4"]:
-            cache_testloader = f'{args.cache_dir}/testloader_{args.model_name_or_path.split("/")[-1]}_{args.calib_dataset}_n{args.nsamples}len{args.seqlen}.cache'
+            cache_testloader = f'{args.cache_dir}/testloader_{args.model_name_or_path.split("/")[-1]}_{args.calib_dataset}_all.cache'
             if os.path.exists(cache_testloader):
                 testloader = torch.load(cache_testloader)
                 logging.info(f"load calibration from {cache_testloader}")
@@ -23,7 +23,7 @@ def evaluate(model, tokenizer, args, logging):
                     dataset,
                     tokenizer,
                     seed=args.seed,
-                    seqlen=args.seqlen,
+                    seqlen=2048, #model.config.max_position_embedding,
                 )
                 torch.save(testloader, cache_testloader)
 
