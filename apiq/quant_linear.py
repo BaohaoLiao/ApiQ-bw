@@ -125,7 +125,6 @@ class QuantLinear(nn.Module):
         self.weight_quantizer = UniformAffineQuantizer(**weight_quant_params, shape=org_module.weight.shape)
     
     def forward(self, x: torch.Tensor):
-        print(self.use_weight_quant)
         if self.use_weight_quant:
             weight = self.weight_quantizer(self.weight)
             bias = self.bias
@@ -136,4 +135,5 @@ class QuantLinear(nn.Module):
         return out
 
     def set_quant_state(self, weight_quant: bool = False):
+        print("Hi")
         self.use_weight_quant = weight_quant
