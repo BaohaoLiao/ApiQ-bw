@@ -6,6 +6,7 @@ from data_utils import get_loaders
 
 @torch.no_grad()
 def evaluate(model, tokenizer, args, logging):
+    logging.info("=== start evaluation ===")
     results = {}
     if "llama" in args.model_family or "mistral" in args.model_family:
         model = model.to(args.device)

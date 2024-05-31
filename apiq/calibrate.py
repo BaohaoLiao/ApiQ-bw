@@ -167,6 +167,7 @@ def calibrate(model, args, dataloader, logging=None):
             del optimizer
         qlayer.half()
 
+        set_quant_state(qlayer, weight_quant=True) # duplicate for resume purpose
         if args.epochs>0:
             # update input of quantization model
             with torch.no_grad():
