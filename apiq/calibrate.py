@@ -150,7 +150,10 @@ def calibrate(model, args, dataloader, logging=None):
                             attention_mask=attention_mask_batch,
                             position_ids=position_ids
                         )[0]
-                        loss = loss_func(fp_inps[index : index+args.batch_size,], quant_out)
+                        loss = loss_func(fp_inps[index:index+args.batch_size,], quant_out)
+                        print("quant: ", quant_out)
+                        print("fp: ", fp_inps[index:index+args.batch_size,])
+
                     if not math.isfinite(loss.item()):
                         logging.info("Loss is NAN, stopping training")
                         pdb.set_trace()
