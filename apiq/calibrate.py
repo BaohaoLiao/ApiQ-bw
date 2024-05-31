@@ -110,8 +110,6 @@ def calibrate(model, args, dataloader, logging=None):
         qlayer = qlayer.to(args.device)
 
         # obtain output of full-precision model
-        # TODO: check
-        print("FP ...")
         set_quant_state(qlayer, weight_quant=False)
         if args.epochs > 0:
             with torch.no_grad():
@@ -144,8 +142,6 @@ def calibrate(model, args, dataloader, logging=None):
                 for j in range(args.nsamples // args.batch_size):    
                     index = j * args.batch_size
                     with traincast():
-                        # TODO: check
-                        print("Quant ...")
                         set_quant_state(qlayer, weight_quant=True)
                         quant_out = qlayer(
                             quant_inps[index:index+args.batch_size,], 
