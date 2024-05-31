@@ -98,7 +98,7 @@ def arg_parse():
     parser.add_argument("--model_name_or_path", type=str)
     #parser.add_argument("--target_modules", type=str, required=True)
     parser.add_argument("--peft_method", type=str, default="LoRA", choices=["LoRA"])
-    parser.add_argument("--peft_args", type=str, default='{"lora_alpha": 16, "r": 64, "lora_dropout": 0.}', choices=["LoRA"])
+    parser.add_argument("--peft_args", type=str, default='{"lora_alpha": 16, "r": 64, "lora_dropout": 0}')
     parser.add_argument(
         "--attn_implementation", type=str, required=False, default="eager", choices=["eager", "sdpa", "flash_attention_2"],
         help="Attention implementation that the model works with",
