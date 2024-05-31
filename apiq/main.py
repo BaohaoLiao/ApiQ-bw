@@ -108,6 +108,7 @@ def arg_parse():
     parser.add_argument("--nsamples", type=int, default=128, help="Number of calibration data samples")
     parser.add_argument("--seqlen", type=int, default=1024, help="Sequence length of calibration sample")
     # Quantization
+    parser.add_argument("--lwc", default=False, action="store_true", help="activate learnable weight clipping")
     parser.add_argument("--wbits", type=int, default=4, choices=[2, 3, 4], help="Weight bit-width")
     parser.add_argument("--group_size", type=int, default=None)
     parser.add_argument("--symmetric", default=False, action="store_true", help="Symmetric quantization")
