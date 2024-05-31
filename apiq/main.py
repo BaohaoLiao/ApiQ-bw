@@ -8,11 +8,15 @@ import time
 import numpy as np
 
 import torch
-from transformers import AutoTokenizer, AutoConfig, AutoModelForCausalLM
 import peft
+from transformers import AutoTokenizer, AutoConfig, AutoModelForCausalLM
+from transformers.models.llama.modeling_llama import LlamaPreTrainedModel
+from transformers.models.mistral.modeling_mistral import MistralPreTrainedModel
 
 from apiq.model_utils import quantize_llama_like
 from apiq.data_utils import get_loaders
+from apiq.calibrate import calibrate
+from apiq.evaluate import evaluate
 
 
 logging.basicConfig(
@@ -33,11 +37,11 @@ def main(args):
     torch.manual_seed(args.seed)
     torch.cuda.manual_seed(args.seed)
 
-    model_family = args.model_name_or_path.split("/")[-1].split("-")[0].lower()
-    assert model_family in MODEL_FAMILY, f"Currently don't support {model_family}"
+    args.model_family = args.model_name_or_path.split("/")[-1].split("-")[0].lower()
+    assert args.model_family in MODEL_FAMILY, f"Currently don't support {args.model_family}"
 
     # Load model and tokenizer
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    args.deivce = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     config = AutoConfig.from_pretrained(args.model_name_or_path, attn_implementation=args.attn_implementation)
     tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path, use_fast=False, legacy=False)
     model = AutoModelForCausalLM.from_pretrained(args.model_name_or_path, config=config, device_map='cpu', torch_dtype=torch.float16)
@@ -54,15 +58,16 @@ def main(args):
     if args.peft_method == "LoRA":
         peft_config = peft.LoraConfig(task_type="CAUSAL_LM", inference_mode=False, target_modules=args.target_modules, **peft_config_kwargs)
         model = peft.get_peft_model(model, peft_config)
-        model = quantize_llama_like(model, weight_quant_params)
 
+    assert isinstance(model.base_model.model, (LlamaPreTrainedModel, MistralPreTrainedModel))
+    model = quantize_llama_like(model, weight_quant_params)
     model.eval()
     logging.info(model)
 
     # Quantization 
     logging.info("=== start quantization ===")
     tick = time.time() 
-    cache_dataloader = f'{args.cache_dir}/{args.model_name_or_path.split("/")[-1]}_{args.calib_dataset}_n{args.nsamples}len{args.seqlen}.cache'
+    cache_dataloader = f'dataloader_{args.cache_dir}/{args.model_name_or_path.split("/")[-1]}_{args.calib_dataset}_n{args.nsamples}len{args.seqlen}.cache'
     if os.path.exists(cache_dataloader):
         dataloader = torch.load(cache_dataloader)
         logging.info(f"load calibration data from {cache_dataloader}")
@@ -76,6 +81,9 @@ def main(args):
         )
         torch.save(dataloader, cache_dataloader)    
 
+    calibrate(model, args, dataloader, logging=logging)
+    logging.info(time.time() - tick)
+    evaluate(model, tokenizer, args, logging)
 
     return
 
@@ -112,6 +120,9 @@ def arg_parse():
     parser.add_argument("--cache_dir", default="./cache", type=str, help="Cache dir of dataset, leading to faster debug")
     parser.add_argument("--resume", type=str, default=None)
     parser.add_argument("--save_dir", default="./models/", type=str, help="Direction for saving model")
+    # Other
+    parser.add_argument("--eval_ppl", default=False, action="store_true")
+
     args = parser.parse_args()
     return args
 

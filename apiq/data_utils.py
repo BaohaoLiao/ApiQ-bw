@@ -1,5 +1,4 @@
 import random
-
 import torch
 from datasets import load_dataset
 
@@ -91,7 +90,6 @@ def get_c4(tokenizer, nsamples, seed, seqlen):
         j = i + seqlen
         valenc.append(tmp.input_ids[:, i:j])
     valenc = torch.hstack(valenc)
-
     return trainloader, valenc
 
 
