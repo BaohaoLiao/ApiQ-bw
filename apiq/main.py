@@ -46,7 +46,7 @@ def main(args):
         Path(args.save_dir).mkdir(parents=True, exist_ok=True)
 
     # Load model and tokenizer
-    args.deivce = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    args.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     config = AutoConfig.from_pretrained(args.model_name_or_path, attn_implementation=args.attn_implementation)
     tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path, use_fast=False, legacy=False)
     model = AutoModelForCausalLM.from_pretrained(args.model_name_or_path, config=config, device_map='cpu', torch_dtype=torch.float16)
