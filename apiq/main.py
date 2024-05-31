@@ -117,10 +117,10 @@ def arg_parse():
     parser.add_argument("--symmetric", default=False, action="store_true", help="Symmetric quantization")
     parser.add_argument("--disable_zero_point", default=False, action="store_true", help="Quantization without zero_point")
     # Training
-    parser.add_argument("--lwc_lr", type=float, default=0.005, help="Learning rate for weight quantization factors")
-    parser.add_argument("--peft_lr", type=float, default=0.001, help="Learning rate for PEFT parameters")
-    parser.add_argument("--lwc_wd", type=float, default=0.1, help="Weight decay for weight quantization factors")
-    parser.add_argument("--peft_wd", type=float, default=0.1, help="Weight decay for PEFT parameters")
+    parser.add_argument("--lwc_lr", type=float, default=0.01, help="Learning rate for weight quantization factors")
+    parser.add_argument("--peft_lr", type=float, default=0.0005, help="Learning rate for PEFT parameters")
+    parser.add_argument("--lwc_wd", type=float, default=0., help="Weight decay for weight quantization factors")
+    parser.add_argument("--peft_wd", type=float, default=0., help="Weight decay for PEFT parameters")
     parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--batch_size", type=int, default=8)
     # Output
