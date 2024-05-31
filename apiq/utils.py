@@ -21,6 +21,7 @@ def get_lwc_parameters(model):
     for n, m in model.named_parameters():
         if n.find('bound_factor') > -1:
             params.append(m)
+    print(params)
     return iter(params)
 
 def get_peft_parameters(model, peft_method):

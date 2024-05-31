@@ -137,10 +137,6 @@ def calibrate(model, args, dataloader, logging=None):
             ])
             loss_scaler = NativeScalerWithGradNormCount()
 
-            for n, p in qlayer.named_parameters():
-                if p.requires_grad:
-                    print(n)
-
             for epoch in range(args.epochs):
                 loss_list = []
                 norm_list = []
