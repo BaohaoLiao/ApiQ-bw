@@ -135,8 +135,11 @@ def calibrate(model, args, dataloader, logging=None):
                 {"params": get_lwc_parameters(qlayer), "lr": args.lwc_lr, "weight_decay": args.lwc_wd},
                 {"params": get_peft_parameters(qlayer, args.peft_method), "lr": args.peft_lr, "weight_decay": args.peft_wd},
             ])
-            print(get_lwc_parameters(qlayer))
             loss_scaler = NativeScalerWithGradNormCount()
+
+            for n, p in qlayer.named_parameters():
+                if p.requires_grad:
+                    print(n)
 
             for epoch in range(args.epochs):
                 loss_list = []
