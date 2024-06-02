@@ -133,7 +133,7 @@ def calibrate(model, args, dataloader, logging=None):
         # TODO: check
         if args.resume:
             qlayer.load_state_dict(lwc_parameters[i], strict=False)
-            qlayer.load_state_dict(peft_parameters[i], strict=True)
+            qlayer.load_state_dict(peft_parameters[i], strict=False)
 
         if args.epochs > 0:
             with torch.no_grad():
@@ -176,7 +176,7 @@ def calibrate(model, args, dataloader, logging=None):
             del optimizer
 
         qlayer.half()
-        # change weight to quant_weight
+        # change weight to quant_weight, i.e. fake quantization
         set_quant_state(qlayer, weight_quant=False)
         quant_inplace(qlayer)
 
