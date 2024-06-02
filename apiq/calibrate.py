@@ -172,7 +172,7 @@ def calibrate(model, args, dataloader, logging=None):
 
                 loss_mean = torch.stack(loss_list).mean()
                 norm_mean = torch.stack(norm_list).mean()
-                logging.info(f"layer {i} epoch {epoch} || loss: {loss_mean}\t"
+                logging.info(f"layer {i} epoch {epoch} \t|| loss: {loss_mean}\t"
                              f"norm: {norm_mean}\tmax memory_allocated: {torch.cuda.max_memory_allocated(args.device) / 1024**2}")
             clear_temp_variable(qlayer)
             del optimizer
