@@ -176,9 +176,10 @@ def calibrate(model, args, dataloader, logging=None):
             del optimizer
 
         qlayer.half()
-        # change weight to quant_weight, i.e. fake quantization
-        set_quant_state(qlayer, weight_quant=False)
-        quant_inplace(qlayer)
+        if not args.real_quant:
+            # change weight to quant_weight, i.e. fake quantization
+            set_quant_state(qlayer, weight_quant=False)
+            quant_inplace(qlayer)
 
         if args.epochs>0:
             # update input of quantization model
@@ -190,20 +191,25 @@ def calibrate(model, args, dataloader, logging=None):
                             attention_mask=attention_mask, 
                             position_ids=position_ids
                         )[0]
-            register_scales_and_zeros(qlayer)
+            #register_scales_and_zeros(qlayer)
             layers[i] = qlayer.to("cpu")
             lwc_parameters[i] = lwc_state_dict(qlayer)
             peft_parameters[i] = peft_state_dict(qlayer, args.peft_method)
             torch.save(lwc_parameters, os.path.join(args.save_dir, f"lwc.pth"))
             torch.save(peft_parameters, os.path.join(args.save_dir, f"peft.pth"))
         else:
-            register_scales_and_zeros(qlayer)
+            #register_scales_and_zeros(qlayer)
             layers[i] = qlayer.to("cpu")
+
 
         if args.real_quant:
             assert args.wbits in [2,3,4], "Only support weight quantization in 2/3/4"
             named_linears = get_named_linears(qlayer)
             for name, module in named_linears.items():
+                # obtain self.scales and self.zeros
+                module.weight_quantizer(module.weight)
+                module.register_scales_and_zeros()
+
                 scales = module.weight_quantizer.scales
                 zeros = module.weight_quantizer.zeros
                 group_size = module.weight_quantizer.group_size
@@ -221,7 +227,7 @@ def calibrate(model, args, dataloader, logging=None):
                 q_linear.pack(module.cpu(),  scales.float().cpu(), zeros.float().cpu())
                 add_new_module(name, qlayer, q_linear)       
                 print(f"pack quantized {name} finished")
-                del module        
+                del module  
 
         del layer
         torch.cuda.empty_cache()
