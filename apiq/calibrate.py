@@ -225,8 +225,7 @@ def calibrate(model, args, dataloader, logging=None):
                 #        args.wbits, group_size, module.in_features,module.out_features,not module.bias is None
                 #    )
                 q_linear.pack(module.cpu(),  scales.float().cpu(), zeros.float().cpu())
-                add_new_module(name, qlayer, q_linear)
-                print(qlayer)      
+                add_new_module(name, qlayer, q_linear)     
                 print(f"pack quantized {name} finished")
                 del module  
 

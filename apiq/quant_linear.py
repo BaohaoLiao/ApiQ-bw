@@ -65,8 +65,11 @@ class UniformAffineQuantizer(nn.Module):
             assert len(x.shape) == 2, "only support linear layer"
             dim1, dim2 = x.shape
             x = x.reshape(-1, self.group_size)
-        scale_zeros = round_zero_point * scale
-        x_int = round_ste((x + scale_zeros) / scale)
+        #scale_zeros = round_zero_point * scale
+        #x_int = round_ste((x + scale_zeros) / scale)
+        x_int = round_ste(x / scale)
+        if round_zero_point is not None:
+            x_int = x_int.add(round_zero_point)
         x_int = x_int.clamp(self.qmin, self.qmax)
         x_dequant = x_int
         x_dequant = x_dequant.sub(round_zero_point)
