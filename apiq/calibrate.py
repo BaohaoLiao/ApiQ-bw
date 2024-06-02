@@ -210,12 +210,8 @@ def calibrate(model, args, dataloader, logging=None):
                 module.weight_quantizer(module.weight)
                 module.weight_quantizer.register_scales_and_zeros()
 
-                scales = module.weight_quantizer.scales
-                zeros = module.weight_quantizer.zeros
-
-                scales.requires_grad = False
-                zeros.requires_grad = False
-
+                scales = module.weight_quantizer.scales.detach()
+                zeros = module.weight_quantizer.zeros.detach()
                 group_size = module.weight_quantizer.group_size
                 dim0 = module.weight.shape[0]
                 scales = scales.view(dim0, -1)
