@@ -116,6 +116,10 @@ def arg_parse():
     parser.add_argument("--group_size", type=int, default=None)
     parser.add_argument("--symmetric", default=False, action="store_true", help="Symmetric quantization")
     parser.add_argument("--disable_zero_point", default=False, action="store_true", help="Quantization without zero_point")
+    parser.add_argument(
+        "--real_quant", default=False, action="store_true", 
+        help="real quantization, which can see memory reduce. Note that due to the limitations of AutoGPTQ kernels, "
+        "the real quantization of weight-only quantization can only lead memory reduction, but with slower inference speed.")
     # Training
     parser.add_argument("--lwc_lr", type=float, default=0.005, help="Learning rate for weight quantization factors")
     parser.add_argument("--peft_lr", type=float, default=0.0005, help="Learning rate for PEFT parameters")

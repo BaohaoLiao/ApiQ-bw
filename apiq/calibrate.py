@@ -15,7 +15,15 @@ from apiq.utils import (
     register_scales_and_zeros,
     lwc_state_dict,
     peft_state_dict,
+    get_named_linears,
+    add_new_module,
 )
+
+try:
+    import auto_gptq.nn_modules.qlinear.qlinear_cuda as qlinear_cuda
+    import auto_gptq.nn_modules.qlinear.qlinear_triton as qlinear_triton
+except:
+    print("auto_gptq is required for real quantization")
 
 
 def calibrate(model, args, dataloader, logging=None):
@@ -165,8 +173,8 @@ def calibrate(model, args, dataloader, logging=None):
                              f"norm: {norm_mean}\tmax memory_allocated: {torch.cuda.max_memory_allocated(args.device) / 1024**2}")
             
             del optimizer
-        qlayer.half()
 
+        qlayer.half()
         set_quant_state(qlayer, weight_quant=True) # duplicate for resume purpose
         if args.epochs>0:
             # update input of quantization model
@@ -187,6 +195,30 @@ def calibrate(model, args, dataloader, logging=None):
         else:
             register_scales_and_zeros(qlayer)
             layers[i] = qlayer.to("cpu")
+
+        if args.real_quant:
+            assert args.wbits in [2,3,4], "Only support weight quantization in 2/3/4"
+            named_linears = get_named_linears(qlayer)
+            for name, module in named_linears.items():
+                scales = module.weight_quantizer.scales
+                zeros = module.weight_quantizer.zeros
+                group_size = module.weight_quantizer.group_size
+                dim0 = module.weight.shape[0]
+                scales = scales.view(dim0, -1)
+                zeros = zeros.view(dim0, -1)
+                if args.wbits == 3:
+                    q_linear = qlinear_cuda.QuantLinear(
+                        args.wbits, group_size, module.in_features,module.out_features,not module.bias is None
+                    )
+                else:
+                    q_linear = qlinear_triton.QuantLinear(
+                        args.wbits, group_size, module.in_features,module.out_features,not module.bias is None
+                    )
+                q_linear.pack(module.cpu(),  scales.float().cpu(), zeros.float().cpu())
+                add_new_module(name, qlayer, q_linear)       
+                print(f"pack quantized {name} finished")
+                print(qlayer)
+                del module        
 
         del layer
         torch.cuda.empty_cache()

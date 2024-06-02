@@ -4,6 +4,25 @@ import torch
 from apiq.quant_linear import QuantLinear
 
 
+def add_new_module(name, original_module, added_module):
+    levels = name.split('.')
+    if len(levels) > 1:
+        mod_ = original_module
+        for l_idx in range(len(levels)-1):
+            if levels[l_idx].isdigit():
+                mod_ = mod_[int(levels[l_idx])]
+            else:
+                mod_ = getattr(mod_, levels[l_idx])
+        setattr(mod_, levels[-1], added_module)
+    else:
+        setattr(original_module, name, added_module)
+
+
+def get_named_linears(module):
+    return {
+        name: m for name, m in module.named_modules() if isinstance(m, QuantLinear)
+    }
+
 def register_scales_and_zeros(model):
     for _, module in model.named_modules():
         if isinstance(module, QuantLinear):
