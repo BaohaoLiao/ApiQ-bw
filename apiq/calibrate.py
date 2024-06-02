@@ -18,6 +18,8 @@ from apiq.utils import (
     get_named_linears,
     add_new_module,
     quant_inplace,
+    clear_temp_variable,
+    quant_temporary,
 )
 
 try:
@@ -130,7 +132,6 @@ def calibrate(model, args, dataloader, logging=None):
                             position_ids=position_ids
                         )[0]
 
-        # TODO: check
         if args.resume:
             qlayer.load_state_dict(lwc_parameters[i], strict=False)
             qlayer.load_state_dict(peft_parameters[i], strict=False)
@@ -151,7 +152,8 @@ def calibrate(model, args, dataloader, logging=None):
                 for j in range(args.nsamples // args.batch_size):    
                     index = j * args.batch_size
                     with traincast():
-                        set_quant_state(qlayer, weight_quant=True)
+                        #set_quant_state(qlayer, weight_quant=True)
+                        quant_temporary(qlayer)
                         quant_out = qlayer(
                             quant_inps[index:index+args.batch_size,], 
                             attention_mask=attention_mask_batch,
@@ -172,14 +174,15 @@ def calibrate(model, args, dataloader, logging=None):
                 norm_mean = torch.stack(norm_list).mean()
                 logging.info(f"layer {i} epoch {epoch} || loss: {loss_mean}\t"
                              f"norm: {norm_mean}\tmax memory_allocated: {torch.cuda.max_memory_allocated(args.device) / 1024**2}")
-            
+            clear_temp_variable(qlayer)
             del optimizer
 
         qlayer.half()
-        if not args.real_quant:
-            # change weight to quant_weight, i.e. fake quantization
-            set_quant_state(qlayer, weight_quant=False)
-            quant_inplace(qlayer)
+        quant_inplace(qlayer)
+        #if not args.real_quant:
+        # change weight to quant_weight, i.e. fake quantization
+        #set_quant_state(qlayer, weight_quant=False)
+        #quant_inplace(qlayer)
 
         if args.epochs>0:
             # update input of quantization model
@@ -191,14 +194,14 @@ def calibrate(model, args, dataloader, logging=None):
                             attention_mask=attention_mask, 
                             position_ids=position_ids
                         )[0]
-            #register_scales_and_zeros(qlayer)
+            register_scales_and_zeros(qlayer)
             layers[i] = qlayer.to("cpu")
             lwc_parameters[i] = lwc_state_dict(qlayer)
             peft_parameters[i] = peft_state_dict(qlayer, args.peft_method)
             torch.save(lwc_parameters, os.path.join(args.save_dir, f"lwc.pth"))
             torch.save(peft_parameters, os.path.join(args.save_dir, f"peft.pth"))
         else:
-            #register_scales_and_zeros(qlayer)
+            register_scales_and_zeros(qlayer)
             layers[i] = qlayer.to("cpu")
 
 
@@ -207,11 +210,10 @@ def calibrate(model, args, dataloader, logging=None):
             named_linears = get_named_linears(qlayer)
             for name, module in named_linears.items():
                 # obtain self.scales and self.zeros
-                module.weight_quantizer(module.weight)
-                module.weight_quantizer.register_scales_and_zeros()
-
-                scales = module.weight_quantizer.scales.detach()
-                zeros = module.weight_quantizer.zeros.detach()
+                # module.weight_quantizer(module.weight)
+                # module.weight_quantizer.register_scales_and_zeros()
+                scales = module.weight_quantizer.scales
+                zeros = module.weight_quantizer.zeros
                 group_size = module.weight_quantizer.group_size
                 dim0 = module.weight.shape[0]
                 scales = scales.view(dim0, -1)
@@ -238,4 +240,6 @@ def calibrate(model, args, dataloader, logging=None):
     torch.cuda.empty_cache()
     gc.collect()                    
     model.config.use_cache = use_cache
+
+    logging.info(model)
     return model

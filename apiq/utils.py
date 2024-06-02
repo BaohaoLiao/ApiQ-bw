@@ -4,11 +4,36 @@ import torch
 from apiq.quant_linear import QuantLinear
 
 
+def quant_temporary(model):
+    for name, module in model.named_modules():
+        if isinstance(module, QuantLinear):
+            module.temp_weight = module.weight
+    # quant
+    for name, module in model.named_modules():
+        if isinstance(module, QuantLinear):
+            if hasattr(module, "temp_weight"):
+                module.temp_weight = module.weight_quantizer(module.temp_weight)
+            else:
+                module.temp_weight = module.weight_quantizer(module.weight)
+            if not hasattr(module, "temp_bias"):
+                module.temp_bias = module.bias
+            module.use_temporary_parameter=True
+
+
+def clear_temp_variable(model):
+    for name, module in model.named_modules():
+        if isinstance(module, QuantLinear):
+            if hasattr(module, "temp_weight"):
+                del module.temp_weight
+            if hasattr(module, "temp_bias"):
+                del module.temp_bias
+
 @torch.no_grad()   
 def quant_inplace(model):
     for name, module in model.named_modules():
         if isinstance(module, QuantLinear):
             module.weight = module.weight_quantizer(module.weight)
+            module.use_temporary_parameter=False
 
 def add_new_module(name, original_module, added_module):
     levels = name.split('.')

@@ -125,10 +125,14 @@ class QuantLinear(nn.Module):
         self.in_features = org_module.in_features
         self.out_features = org_module.out_features
         self.use_weight_quant = False
+        self.use_temporary_parameter = False
         self.weight_quantizer = UniformAffineQuantizer(**weight_quant_params, shape=org_module.weight.shape)
-    
+
     def forward(self, x: torch.Tensor):
-        if self.use_weight_quant:
+        if self.use_temporary_parameter:
+            weight = self.temp_weight
+            bias = self.temp_bias
+        elif self.use_weight_quant:
             weight = self.weight_quantizer(self.weight)
             bias = self.bias
         else:
