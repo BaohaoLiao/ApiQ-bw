@@ -131,7 +131,7 @@ def calibrate(model, args, dataloader, logging=None):
 
         # TODO: check
         if args.resume:
-            qlayer.load_state_dict(lwc_parameters[i], strict=False)
+            qlayer.load_state_dict(lwc_parameters[i], strict=True)
             qlayer.load_state_dict(peft_parameters[i], strict=False)
 
         if args.epochs > 0:
