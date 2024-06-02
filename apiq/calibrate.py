@@ -200,6 +200,7 @@ def calibrate(model, args, dataloader, logging=None):
             assert args.wbits in [2,3,4], "Only support weight quantization in 2/3/4"
             named_linears = get_named_linears(qlayer)
             for name, module in named_linears.items():
+                print(name, module)
                 scales = module.weight_quantizer.scales
                 zeros = module.weight_quantizer.zeros
                 group_size = module.weight_quantizer.group_size
