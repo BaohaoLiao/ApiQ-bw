@@ -4,6 +4,12 @@ import torch
 from apiq.quant_linear import QuantLinear
 
 
+@torch.no_grad()   
+def quant_inplace(model):
+    for name, module in model.named_modules():
+        if isinstance(module, QuantLinear):
+            module.weight = module.weight_quantizer(module.weight)
+
 def add_new_module(name, original_module, added_module):
     levels = name.split('.')
     if len(levels) > 1:

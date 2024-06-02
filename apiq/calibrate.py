@@ -17,6 +17,7 @@ from apiq.utils import (
     peft_state_dict,
     get_named_linears,
     add_new_module,
+    quant_inplace,
 )
 
 try:
@@ -175,7 +176,10 @@ def calibrate(model, args, dataloader, logging=None):
             del optimizer
 
         qlayer.half()
-        set_quant_state(qlayer, weight_quant=True) # duplicate for resume purpose
+        # change weight to quant_weight
+        set_quant_state(qlayer, weight_quant=False)
+        quant_inplace(qlayer)
+
         if args.epochs>0:
             # update input of quantization model
             with torch.no_grad():
