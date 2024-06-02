@@ -216,14 +216,14 @@ def calibrate(model, args, dataloader, logging=None):
                 dim0 = module.weight.shape[0]
                 scales = scales.view(dim0, -1)
                 zeros = zeros.view(dim0, -1)
-                if args.wbits == 3:
-                    q_linear = qlinear_cuda.QuantLinear(
-                        args.wbits, group_size, module.in_features,module.out_features,not module.bias is None
-                    )
-                else:
-                    q_linear = qlinear_triton.QuantLinear(
-                        args.wbits, group_size, module.in_features,module.out_features,not module.bias is None
-                    )
+                #if args.wbits == 3:
+                q_linear = qlinear_cuda.QuantLinear(
+                    args.wbits, group_size, module.in_features,module.out_features,not module.bias is None
+                )
+                #else:
+                #    q_linear = qlinear_triton.QuantLinear(
+                #        args.wbits, group_size, module.in_features,module.out_features,not module.bias is None
+                #    )
                 q_linear.pack(module.cpu(),  scales.float().cpu(), zeros.float().cpu())
                 add_new_module(name, qlayer, q_linear)       
                 print(f"pack quantized {name} finished")
