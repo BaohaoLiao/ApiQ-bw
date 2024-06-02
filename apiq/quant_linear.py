@@ -103,9 +103,9 @@ class UniformAffineQuantizer(nn.Module):
     def register_scales_and_zeros(self):
         self.register_buffer('scales', self.scale)
         self.register_buffer('zeros', self.round_zero_point)
+        print(self.scale)
         del self.scale
         del self.round_zero_point
-        print(self.scales)
 
 
 class QuantLinear(nn.Module):
