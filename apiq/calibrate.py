@@ -204,7 +204,6 @@ def calibrate(model, args, dataloader, logging=None):
             assert args.wbits in [2,3,4], "Only support weight quantization in 2/3/4"
             named_linears = get_named_linears(qlayer)
             for name, module in named_linears.items():
-                print(name, module)
                 scales = module.weight_quantizer.scales
                 zeros = module.weight_quantizer.zeros
                 group_size = module.weight_quantizer.group_size
@@ -222,7 +221,6 @@ def calibrate(model, args, dataloader, logging=None):
                 q_linear.pack(module.cpu(),  scales.float().cpu(), zeros.float().cpu())
                 add_new_module(name, qlayer, q_linear)       
                 print(f"pack quantized {name} finished")
-                print(qlayer)
                 del module        
 
         del layer
