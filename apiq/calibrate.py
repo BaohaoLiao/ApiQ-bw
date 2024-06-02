@@ -207,11 +207,15 @@ def calibrate(model, args, dataloader, logging=None):
             named_linears = get_named_linears(qlayer)
             for name, module in named_linears.items():
                 # obtain self.scales and self.zeros
-                module.weight_quantizer(module.weight.detach())
+                module.weight_quantizer(module.weight)
                 module.weight_quantizer.register_scales_and_zeros()
 
                 scales = module.weight_quantizer.scales
                 zeros = module.weight_quantizer.zeros
+
+                scales.requires_grad = False
+                zeros.requires_grad = False
+
                 group_size = module.weight_quantizer.group_size
                 dim0 = module.weight.shape[0]
                 scales = scales.view(dim0, -1)
