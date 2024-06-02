@@ -208,7 +208,7 @@ def calibrate(model, args, dataloader, logging=None):
             for name, module in named_linears.items():
                 # obtain self.scales and self.zeros
                 module.weight_quantizer(module.weight)
-                module.register_scales_and_zeros()
+                module.weight_quantizer.register_scales_and_zeros()
 
                 scales = module.weight_quantizer.scales
                 zeros = module.weight_quantizer.zeros
