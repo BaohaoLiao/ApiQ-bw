@@ -50,6 +50,7 @@ def main(args):
         Path(args.save_dir).mkdir(parents=True, exist_ok=True)
     if args.convert_to_gptq:
         assert ((args.resume is not None) and (args.resume != args.save_dir)), "--resume refers to the folder of fake quant."
+    assert not (args.epoch > 1 and args.convert_to_gptq), "--convert_to_gptq can only be set after calibration"
 
     # Load model and tokenizer
     args.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -100,13 +101,13 @@ def main(args):
     logging.info(f"Time for quantization: {time.time() - tick} s")
     evaluate(model, tokenizer, args, logging)
 
-    #if not args.resume:
-    logging.info(f"Save fake quant model, i.e. the quant weight is in fp16. For real quant model, use --convert_to_gptq after quantization.")
-    args.save_dir = args.resume
-    model.save_pretrained(args.save_dir) # save adapter weights
-    model.unload()
-    model.base_model.save_pretrained(args.save_dir) # save base model (fake quant)
-    tokenizer.save_pretrained(args.save_dir)
+    if not args.resume:
+        logging.info(f"Save fake quant model, i.e. the quant weight is in fp16. For real quant model, use --convert_to_gptq after quantization.")
+        args.save_dir = args.resume
+        model.save_pretrained(args.save_dir) # save adapter weights
+        model.unload()
+        model.base_model.save_pretrained(args.save_dir) # save base model (fake quant)
+        tokenizer.save_pretrained(args.save_dir)
    
     if args.convert_to_gptq:
         logging.info(f"Save base model in gptq type.")
