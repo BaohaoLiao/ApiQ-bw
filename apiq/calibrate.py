@@ -37,9 +37,14 @@ def calibrate(model, args, dataloader, logging=None):
     is_llama = False
     if ("llama" in args.model_family) or ("mistral" in  args.model_family):
         is_llama = True
-        layers = model.base_model.model.model.layers
-        model.base_model.model.model.embed_tokens = model.base_model.model.model.embed_tokens.to(args.device)
-        model.base_model.model.model.norm = model.base_model.model.model.norm.to(args.device)
+        if not args.convert_to_gptq:
+            layers = model.base_model.model.model.layers
+            model.base_model.model.model.embed_tokens = model.base_model.model.model.embed_tokens.to(args.device)
+            model.base_model.model.model.norm = model.base_model.model.model.norm.to(args.device)
+        else:
+            layers = model.model.layers
+            model.model.embed_tokens = model.model.embed_tokens.to(args.device)
+            model.model.norm = model.model.norm.to(args.device)
     else:
         raise ValueError("Only support llama/mistral now")
     
@@ -81,8 +86,12 @@ def calibrate(model, args, dataloader, logging=None):
     layers[0] = layers[0].module
     layers[0] = layers[0].cpu()
     if "llama" in args.model_family or "mistral" in args.model_family:
-        model.base_model.model.model.embed_tokens = model.base_model.model.model.embed_tokens.cpu()
-        model.base_model.model.model.norm = model.base_model.model.model.norm.cpu()
+        if not args.convert_to_gptq:
+            model.base_model.model.model.embed_tokens = model.base_model.model.model.embed_tokens.cpu()
+            model.base_model.model.model.norm = model.base_model.model.model.norm.cpu()
+        else:
+            model.model.embed_tokens = model.model.embed_tokens.cpu()
+            model.model.norm = model.model.norm.cpu()
     else:
         raise ValueError("Only support llama/mistral now")
     torch.cuda.empty_cache()
@@ -204,8 +213,7 @@ def calibrate(model, args, dataloader, logging=None):
             register_scales_and_zeros(qlayer)
             layers[i] = qlayer.to("cpu")
 
-
-        if args.real_quant:
+        if args.real_quant or args.convert_to_gptq:
             assert args.wbits in [2,3,4], "Only support weight quantization in 2/3/4"
             named_linears = get_named_linears(qlayer)
             for name, module in named_linears.items():

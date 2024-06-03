@@ -1,5 +1,6 @@
 import os
 import sys
+import shutil
 import argparse
 import logging
 import random
@@ -13,6 +14,7 @@ import peft
 from transformers import AutoTokenizer, AutoConfig, AutoModelForCausalLM
 from transformers.models.llama.modeling_llama import LlamaPreTrainedModel
 from transformers.models.mistral.modeling_mistral import MistralPreTrainedModel
+from optimum.gptq import GPTQQuantizer
 
 from apiq.model_utils import quantize_llama_like
 from apiq.data_utils import get_loaders
@@ -38,12 +40,15 @@ def main(args):
     torch.manual_seed(args.seed)
     torch.cuda.manual_seed(args.seed)
 
+    # Initialization
     args.model_family = args.model_name_or_path.split("/")[-1].split("-")[0].lower()
     assert args.model_family in MODEL_FAMILY, f"Currently don't support {args.model_family}"
     if args.cache_dir:
         Path(args.cache_dir).mkdir(parents=True, exist_ok=True)
     if args.save_dir:
         Path(args.save_dir).mkdir(parents=True, exist_ok=True)
+    if args.convert_to_gptq:
+        assert ((args.resume is not None) and (args.resume != args.save_dir)), "Resume is the folder for fake quantization."
 
     # Load model and tokenizer
     args.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -59,13 +64,16 @@ def main(args):
         "lwc":args.lwc,
         "disable_zero_point": args.disable_zero_point
     }
-    peft_config_kwargs = json.loads(args.peft_args)
-    if args.peft_method == "LoRA":
-        target_modules = ["q_proj", "k_proj", "v_proj", "o_proj", "up_proj", "gate_proj", "down_proj"]
-        peft_config = peft.LoraConfig(task_type="CAUSAL_LM", inference_mode=False, target_modules=target_modules,  **peft_config_kwargs)
-        model = peft.get_peft_model(model, peft_config)
 
-    assert isinstance(model.base_model.model, (LlamaPreTrainedModel, MistralPreTrainedModel))
+    if not args.convert_to_gptq: # only need the base model for converting
+        peft_config_kwargs = json.loads(args.peft_args)
+        if args.peft_method == "LoRA":
+            target_modules = ["q_proj", "k_proj", "v_proj", "o_proj", "up_proj", "gate_proj", "down_proj"]
+            peft_config = peft.LoraConfig(task_type="CAUSAL_LM", inference_mode=False, target_modules=target_modules,  **peft_config_kwargs)
+            model = peft.get_peft_model(model, peft_config)
+
+        assert isinstance(model.base_model.model, (LlamaPreTrainedModel, MistralPreTrainedModel))
+
     model = quantize_llama_like(model, weight_quant_params)
     model.eval()
     logging.info(model)
@@ -89,8 +97,33 @@ def main(args):
 
     calibrate(model, args, dataloader, logging=logging)
     logging.info(f"Time for quantization: {time.time() - tick}")
-    evaluate(model, tokenizer, args, logging)
-
+    
+    if not args.convert_to_gptq:
+        logging.info(f"Save fake quant model, i.e. the quant weight is in fp16. For real quant model, use --convert_to_gptq after quantization.")
+        model.save_pretrained(args.save_dir) # save adapter weights
+        model.unload()
+        model.base_model.save_pretrained(args.save_dir) # save base model (fake quant)
+        tokenizer.save_pretrained(args.save_dir)
+        evaluate(model, tokenizer, args, logging)
+    else:
+        logging.info(f"Save base model in gptq type.")
+        ## config
+        quantizer = GPTQQuantizer(
+            bits=args.wbits, 
+            group_size=args.group_size, 
+            sym=args.symmetric,
+            use_cuda_fp16=True, # TODO: might be set to False, need to check
+            use_exllama=False, # TODO: might be set to True
+        )
+        quantizer.save(model, args.save_dir)
+        tokenizer.save_pretrained(args.save_dir) # for easy loading
+        ## copy all adapters from --resume to --save_dir for easy loading
+        files = os.listdir(args.resume)
+        for file in files:
+            if file.startswith("adapter"):
+                source_file_path = os.path.join(args.resume, file)
+                destination_file_path = os.path.join(args.save_dir, file)
+                shutil.copy(source_file_path, destination_file_path)
     return
 
 
@@ -131,6 +164,10 @@ def arg_parse():
     parser.add_argument("--cache_dir", default="./cache", type=str, help="Cache dir of dataset, leading to faster debug")
     parser.add_argument("--resume", type=str, default=None)
     parser.add_argument("--save_dir", default="./models/", type=str, help="Direction for saving model")
+    parser.add_argument(
+        "--convert_to_gptq", default=False, action="store_true", 
+        help="convert the base model to gptq type for real memory saving during finetuning."
+    )
     # Other
     parser.add_argument("--eval_ppl", default=False, action="store_true")
     parser.add_argument("--limit", type=int, default=-1, help="Number of samples in evaluation for debug purpose.")
