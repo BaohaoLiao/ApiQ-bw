@@ -8,13 +8,14 @@ import json
 import time
 import numpy as np
 from pathlib import Path
+from collections import OrderedDict
 
 import torch
 import peft
+from safetensors.torch import save_file
 from transformers import AutoTokenizer, AutoConfig, AutoModelForCausalLM
 from transformers.models.llama.modeling_llama import LlamaPreTrainedModel
 from transformers.models.mistral.modeling_mistral import MistralPreTrainedModel
-from optimum.gptq import GPTQQuantizer
 
 from apiq.model_utils import quantize_llama_like
 from apiq.data_utils import get_loaders
@@ -48,7 +49,7 @@ def main(args):
     if args.save_dir:
         Path(args.save_dir).mkdir(parents=True, exist_ok=True)
     if args.convert_to_gptq:
-        assert ((args.resume is not None) and (args.resume != args.save_dir)), "Resume is the folder for fake quantization."
+        assert ((args.resume is not None) and (args.resume != args.save_dir)), "--resume refers to the folder of fake quant."
 
     # Load model and tokenizer
     args.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -65,15 +66,14 @@ def main(args):
         "disable_zero_point": args.disable_zero_point
     }
 
-    if not args.convert_to_gptq: # only need the base model for converting
-        peft_config_kwargs = json.loads(args.peft_args)
-        if args.peft_method == "LoRA":
-            #peft_config_kwargs["lora_alpha"] = 16 if args.wbits == 4 else peft_config_kwargs["r"] # borrowed from LoftQ
-            target_modules = ["q_proj", "k_proj", "v_proj", "o_proj", "up_proj", "gate_proj", "down_proj"]
-            peft_config = peft.LoraConfig(task_type="CAUSAL_LM", inference_mode=False, target_modules=target_modules,  **peft_config_kwargs)
-            model = peft.get_peft_model(model, peft_config)
+    peft_config_kwargs = json.loads(args.peft_args)
+    if args.peft_method == "LoRA":
+        #peft_config_kwargs["lora_alpha"] = 16 if args.wbits == 4 else peft_config_kwargs["r"] # borrowed from LoftQ
+        target_modules = ["q_proj", "k_proj", "v_proj", "o_proj", "up_proj", "gate_proj", "down_proj"]
+        peft_config = peft.LoraConfig(task_type="CAUSAL_LM", inference_mode=False, target_modules=target_modules,  **peft_config_kwargs)
+        model = peft.get_peft_model(model, peft_config)
 
-        assert isinstance(model.base_model.model, (LlamaPreTrainedModel, MistralPreTrainedModel))
+    assert isinstance(model.base_model.model, (LlamaPreTrainedModel, MistralPreTrainedModel))
 
     model = quantize_llama_like(model, weight_quant_params)
     model.eval()
@@ -109,20 +109,38 @@ def main(args):
         evaluate(model, tokenizer, args, logging)
     else:
         logging.info(f"Save base model in gptq type.")
-        ## config
-        quantizer = GPTQQuantizer(
-            bits=args.wbits, 
-            group_size=args.group_size, 
-            sym=args.symmetric,
-            use_cuda_fp16=True, # TODO: might be set to False, need to check
-            use_exllama=False, # TODO: might be set to True
-        )
-        quantizer.save(model, args.save_dir)
+        ## manually save config
+        config = AutoConfig.from_pretrained(args.model_name_or_path)
+        quantization_config = {
+            'bits': args.wbits,
+            'group_size': args.group_size,
+            'damp_percent': 0.01,
+            'desc_act': False,
+            'sym': args.symmetric,
+            'true_sequential': True,
+            'model_name_or_path': None,
+            'model_file_base_name': 'model',
+            'quant_method': 'gptq'
+        }
+        config.quantization_config = quantization_config
+        config.save_pretrained(args.save_dir)
+
+        ## save model
+        def save_base_gptq_model(model):
+            gptq_dicts = OrderedDict()
+            for key, v in model.state_dict().items():
+                if "lora" not in key:
+                    new_key = key[len("base_model.model."):]
+                    new_key = new_key.replace("base_layer.", "")
+                    gptq_dicts[new_key] = v.cpu()
+            return gptq_dicts
+        gptq_model_dicts = save_base_gptq_model(model)
+        save_file(gptq_model_dicts, os.path.join(args.save_dir, "model.safetensors"), metadata={"format": "pt"})
         tokenizer.save_pretrained(args.save_dir) # for easy loading
         ## copy all adapters from --resume to --save_dir for easy loading
         files = os.listdir(args.resume)
         for file in files:
-            if file.startswith("adapter"):
+            if file.startswith("adapter") or file.startswith("generation"):
                 source_file_path = os.path.join(args.resume, file)
                 destination_file_path = os.path.join(args.save_dir, file)
                 shutil.copy(source_file_path, destination_file_path)
