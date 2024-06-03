@@ -50,7 +50,7 @@ def main(args):
         Path(args.save_dir).mkdir(parents=True, exist_ok=True)
     if args.convert_to_gptq:
         assert ((args.resume is not None) and (args.resume != args.save_dir)), "--resume refers to the folder of fake quant."
-    assert not (args.epoch > 1 and args.convert_to_gptq), "--convert_to_gptq can only be set after calibration"
+    assert not (args.epochs > 1 and args.convert_to_gptq), "--convert_to_gptq can only be set after calibration"
 
     # Load model and tokenizer
     args.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
