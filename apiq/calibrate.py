@@ -218,7 +218,6 @@ def calibrate(model, args, dataloader, logging=None):
                 scales = scales.view(dim0, -1)
                 zeros = zeros.view(dim0, -1)
                 #if args.wbits == 3:
-                print(not module.bias is None)
                 q_linear = qlinear_cuda.QuantLinear(
                     args.wbits, group_size, module.in_features, module.out_features, not module.bias is None
                 )
