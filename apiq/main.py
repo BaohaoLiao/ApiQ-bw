@@ -102,6 +102,7 @@ def main(args):
 
     #if not args.resume:
     logging.info(f"Save fake quant model, i.e. the quant weight is in fp16. For real quant model, use --convert_to_gptq after quantization.")
+    args.save_dir = args.resume
     model.save_pretrained(args.save_dir) # save adapter weights
     model.unload()
     model.base_model.save_pretrained(args.save_dir) # save base model (fake quant)
