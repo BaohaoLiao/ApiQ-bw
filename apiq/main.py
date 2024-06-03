@@ -68,7 +68,7 @@ def main(args):
     if not args.convert_to_gptq: # only need the base model for converting
         peft_config_kwargs = json.loads(args.peft_args)
         if args.peft_method == "LoRA":
-            peft_config_kwargs["lora_alpha"] = 16 if args.wbits == 4 else peft_config_kwargs["r"] # borrowed from LoftQ
+            #peft_config_kwargs["lora_alpha"] = 16 if args.wbits == 4 else peft_config_kwargs["r"] # borrowed from LoftQ
             target_modules = ["q_proj", "k_proj", "v_proj", "o_proj", "up_proj", "gate_proj", "down_proj"]
             peft_config = peft.LoraConfig(task_type="CAUSAL_LM", inference_mode=False, target_modules=target_modules,  **peft_config_kwargs)
             model = peft.get_peft_model(model, peft_config)
