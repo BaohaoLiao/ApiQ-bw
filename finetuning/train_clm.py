@@ -72,7 +72,6 @@ class ModelArguments:
     """
     Arguments pertaining to which model/config/tokenizer we are going to fine-tune, or train from scratch.
     """
-
     model_name_or_path: Optional[str] = field(
         default=None,
         metadata={
@@ -184,7 +183,6 @@ class DataTrainingArguments:
     """
     Arguments pertaining to what data we are going to input our model for training and eval.
     """
-
     dataset_name: Optional[str] = field(
         default=None, metadata={"help": "The name of the dataset to use (via the datasets library)."}
     )
@@ -449,7 +447,7 @@ def main():
     model = AutoModelForCausalLM.from_pretrained(
         model_args.model_name_or_path,
         low_cpu_mem_usage=True,
-        torch_dtype=torch.float16,
+        torch_dtype=torch.bfloat16,
         token=model_args.token,
     )
 
