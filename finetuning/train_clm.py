@@ -478,6 +478,7 @@ def main():
         model = PeftModel.from_pretrained(
             model,
             model_args.model_name_or_path,
+            subfolder='apiq_init',
             is_trainable=True if training_args.do_train else False,
             token=model_args.token,
         )
