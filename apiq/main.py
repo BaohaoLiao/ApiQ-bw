@@ -104,7 +104,7 @@ def main(args):
     if not args.resume:
         logging.info(f"Save fake quant model, i.e. the quant weight is in fp16. For real quant model, use --convert_to_gptq after quantization.")
         args.save_dir = args.resume
-        model.save_pretrained(args.save_dir) # save adapter weights
+        model.save_pretrained(os.path.join(args.save_dir, "apiq_init")) # save adapter weights
         model.unload()
         model.base_model.save_pretrained(args.save_dir) # save base model (fake quant)
         tokenizer.save_pretrained(args.save_dir)
@@ -139,10 +139,11 @@ def main(args):
         gptq_model_dicts = save_base_gptq_model(model)
         save_file(gptq_model_dicts, os.path.join(args.save_dir, "model.safetensors"), metadata={"format": "pt"})
         tokenizer.save_pretrained(args.save_dir) # for easy loading
-        ## copy all adapters from --resume to --save_dir for easy loading
+        ## copy necessary files from --resume to --save_dir for easy loading
+        shutil.copytree(os.path.join(args.resume, "apiq_init"), os.path.join(args.save_dir, "apiq_init"), dirs_exist_ok=True)
         files = os.listdir(args.resume)
         for file in files:
-            if file.startswith("adapter") or file.startswith("generation"):
+            if file.startswith("generation") or file.endswith(".pth"):
                 source_file_path = os.path.join(args.resume, file)
                 destination_file_path = os.path.join(args.save_dir, file)
                 shutil.copy(source_file_path, destination_file_path)
