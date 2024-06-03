@@ -21,6 +21,5 @@ python finetuning/train_clm.py \
     --lr_scheduler_type "cosine" \
     --logging_steps 1 \
     --do_train --do_eval \
-    --logging_steps 50 \
     --report_to none \
     --block_size 1024
