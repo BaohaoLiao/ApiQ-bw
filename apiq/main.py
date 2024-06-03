@@ -107,12 +107,10 @@ def main(args):
     args.save_dir = args.resume
     model.save_pretrained(os.path.join(args.save_dir, "apiq_init")) # save adapter weights
     model.unload()
-    """
     for name, module in model.named_modules():
         if isinstance(module, QuantLinear):
             if hasattr(module, "weight_quantizer"):
                 del module.weight_quantizer
-    """
     model.base_model.save_pretrained(args.save_dir) # save base model (fake quant)
     tokenizer.save_pretrained(args.save_dir)
    
