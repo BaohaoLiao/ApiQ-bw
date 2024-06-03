@@ -96,7 +96,7 @@ def main(args):
         torch.save(dataloader, cache_dataloader)    
 
     calibrate(model, args, dataloader, logging=logging)
-    logging.info(f"Time for quantization: {time.time() - tick}")
+    logging.info(f"Time for quantization: {time.time() - tick} s")
     
     if not args.convert_to_gptq:
         logging.info(f"Save fake quant model, i.e. the quant weight is in fp16. For real quant model, use --convert_to_gptq after quantization.")
