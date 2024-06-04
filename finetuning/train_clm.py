@@ -137,13 +137,13 @@ class ModelArguments:
         },
     )
     torch_dtype: Optional[str] = field(
-        default="bfloat16",
+        default="torch.bfloat16",
         metadata={
             "help": (
                 "Override the default `torch.dtype` and load the model under this dtype. If `auto` is passed, the "
                 "dtype will be automatically derived from the model's weights."
             ),
-            "choices": ["auto", "bfloat16", "float16", "float32"],
+            "choices": ["auto", "torch.bfloat16", "torch.float16", "torch.float32"],
         },
     )
     low_cpu_mem_usage: bool = field(
