@@ -8,7 +8,6 @@ torchrun --nproc_per_node=1 finetuning/train_gsm8k.py \
   --model_name_or_path $MODEL \
   --learning_rate 3e-4 \
   --seed 11 \
-  --expt_name llama2_7b_3bit_64rank_fake \
   --output_dir $OUTPUT_DIR \
   --num_train_epochs 6 \
   --per_device_train_batch_size 2 \
