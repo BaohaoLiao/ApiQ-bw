@@ -171,6 +171,10 @@ class ModelArguments:
         default=16,
         metadata={"help": "LoftQ does not require this config. Used for QLoRA."},
     )
+    attn_implementation: str = field(
+        default="eager",
+        metadata={"help": "Choose from [eager, sdpa, flash_attention_2]"},
+    )
     def __post_init__(self):
         if self.config_overrides is not None and (self.config_name is not None or self.model_name_or_path is not None):
             raise ValueError(
@@ -444,10 +448,15 @@ def main():
             "You can do it from another script, save it, and load it from here, using --tokenizer_name."
         )
 
+    config = AutoConfig.from_pretrained(
+        model_args.model_name_or_path, 
+        attn_implementation=model_args.attn_implementation
+    )
     model = AutoModelForCausalLM.from_pretrained(
         model_args.model_name_or_path,
+        config=config,
         low_cpu_mem_usage=True,
-        torch_dtype=torch.bfloat16,
+        torch_dtype=torch.float16,
         token=model_args.token,
     )
 
