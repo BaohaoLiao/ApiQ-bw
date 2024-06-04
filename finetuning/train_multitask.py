@@ -5,11 +5,9 @@ import warnings
 import logging
 from dataclasses import dataclass, field
 from typing import Optional
-import numpy as np
 
 import torch
 import datasets
-import evaluate
 import transformers
 from transformers import (
     HfArgumentParser,
