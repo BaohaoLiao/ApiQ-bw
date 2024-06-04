@@ -305,8 +305,8 @@ def main():
             is_trainable=True,
             token=model_args.token,
         )
-    logger(model)
-    logger(model.print_trainable_parameters())
+    logger.info(model)
+    logger.info(model.print_trainable_parameters())
 
     # We resize the embeddings only when necessary to avoid index errors. If you are creating a model from scratch
     # on a small vocab and want a smaller embedding size, remove this test.
