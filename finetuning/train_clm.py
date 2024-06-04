@@ -172,7 +172,7 @@ class ModelArguments:
         metadata={"help": "LoftQ does not require this config. Used for QLoRA."},
     )
     attn_implementation: str = field(
-        default="eager",
+        default="sdpa",
         metadata={"help": "Choose from [eager, sdpa, flash_attention_2]"},
     )
     def __post_init__(self):
