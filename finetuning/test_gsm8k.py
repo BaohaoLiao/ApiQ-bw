@@ -21,11 +21,14 @@ from typing import Dict, Optional
 
 import torch
 import transformers
-
-
 from peft import PeftModel
 from datasets import load_dataset
 from accelerate.utils import set_seed
+
+logging.basicConfig(
+    format='%(asctime)s %(levelname)-8s %(message)s',
+    level=logging.INFO,
+    datefmt='%Y-%m-%d %H:%M:%S')
 
 
 IGNORE_INDEX = -100
@@ -269,8 +272,8 @@ if __name__ == "__main__":
         logging.warning("Use the checkpoint in HF hub, stored in the `subfolder='gsm8k'` in target model.")
         adapter_dir_list = [None]
 
-    print(adapter_dir_list)
-    logging.info(f"Evaluate checkpoint from {adapter_dir_list}")
+    logging.info(f"Evaluate checkpoints from {adapter_dir_list}")
     for adapter_path in adapter_dir_list:
+        logging.info(f"Evaluate adapter_path")
         model_args.adapter_name_or_path = adapter_path
         evaluation(model_args, data_args)
