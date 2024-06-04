@@ -417,7 +417,7 @@ def main():
             with open(result_json_file_name, 'w') as json_file:
                 json.dump(eval_results, json_file, indent=4)
 
-            all_eval_results[ckpt_dir] = np.mean(list(eval_results.values()))
+            all_eval_results[ckpt_dir.split("/")[-1]] = np.mean(list(eval_results.values()))
         result_json_file_name = f"{training_args.output_dir}/all_eval_results.json"
         with open(result_json_file_name, 'w') as json_file:
                 json.dump(all_eval_results, json_file, indent=4)
