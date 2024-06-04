@@ -51,7 +51,7 @@ class ModelArguments:
         default=None,
         metadata={"help": "Path to your local output directory"},
     )
-    full_precision:  bool = field(default=False)
+    full_precision:  bool = field(default=True)
     token: Optional[str] = field(
         default=None,
         metadata={"help": "HF token to access to private models, e.g., meta-llama"},
