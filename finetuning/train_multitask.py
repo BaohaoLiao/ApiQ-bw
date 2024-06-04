@@ -28,7 +28,7 @@ from peft import PeftModel, get_peft_model, TaskType, LoraConfig
 
 from finetuning.task_config import task_config
 from finetuning.dataset import SupervisedDataset
-from compute_metrics import compute_metrics
+from finetuning.compute_metrics import compute_metrics
 
 
 logger = logging.getLogger(__name__)
