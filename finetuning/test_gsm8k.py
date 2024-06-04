@@ -274,6 +274,6 @@ if __name__ == "__main__":
 
     logging.info(f"Evaluate checkpoints from {adapter_dir_list}")
     for adapter_path in adapter_dir_list:
-        logging.info(f"Evaluate adapter_path")
+        logging.info(f"Evaluate {adapter_path}")
         model_args.adapter_name_or_path = adapter_path
         evaluation(model_args, data_args)
