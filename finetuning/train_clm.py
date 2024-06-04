@@ -137,7 +137,7 @@ class ModelArguments:
         },
     )
     torch_dtype: Optional[str] = field(
-        default=None,
+        default="bfloat16",
         metadata={
             "help": (
                 "Override the default `torch.dtype` and load the model under this dtype. If `auto` is passed, the "
@@ -456,7 +456,7 @@ def main():
         model_args.model_name_or_path,
         config=config,
         low_cpu_mem_usage=True,
-        torch_dtype=torch.float16,
+        torch_dtype=model_args.torch_dtype,  # float16 is not stable for fake quant
         token=model_args.token,
     )
 
