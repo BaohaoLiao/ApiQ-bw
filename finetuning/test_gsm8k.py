@@ -173,7 +173,7 @@ def evaluation(model_args, data_args):
     logging.warning("Tokenizing inputs...")
     eval_step = math.ceil(len(question)/data_args.batch_size)
     logging.warning(f"Total example: {len(question)} | eval batch size: {data_args.batch_size}"
-                    f"eval steps: {eval_step}")
+                    f" eval steps: {eval_step}")
     question_data = []
     for i in range(eval_step):
         if i < eval_step - 1:
@@ -269,6 +269,7 @@ if __name__ == "__main__":
         logging.warning("Use the checkpoint in HF hub, stored in the `subfolder='gsm8k'` in target model.")
         adapter_dir_list = [None]
 
+    print(adapter_dir_list)
     logging.info(f"Evaluate checkpoint from {adapter_dir_list}")
     for adapter_path in adapter_dir_list:
         model_args.adapter_name_or_path = adapter_path
