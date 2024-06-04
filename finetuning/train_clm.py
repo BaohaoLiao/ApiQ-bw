@@ -445,22 +445,16 @@ def main():
             "You can do it from another script, save it, and load it from here, using --tokenizer_name."
         )
 
+    # TODO: real quant, need to know what bug is fixed in AutoGPTQ and use newest version optimum
     config = AutoConfig.from_pretrained(
         model_args.model_name_or_path, 
         attn_implementation=model_args.attn_implementation
     )
-    if training_args.do_train:
-        config.quantization_
-    low_cpu_mem_usage = model_args.low_cpu_mem_usage
-    if model_args.full_precision:
-        torch_dtype = torch.bfloat16 # float16 is not stable for fake quant
-    else:
-        low_cpu_mem_usage = False # thow error if set to true
     model = AutoModelForCausalLM.from_pretrained(
         model_args.model_name_or_path,
         config=config,
-        low_cpu_mem_usage=low_cpu_mem_usage,
-        torch_dtype=torch.bfloat16,  
+        low_cpu_mem_usage=model_args.low_cpu_mem_usage,
+        torch_dtype=torch.bfloat16,  # the fake quant model is in fp16, but torch.float16 is not stable for training
         token=model_args.token,
     )
 
