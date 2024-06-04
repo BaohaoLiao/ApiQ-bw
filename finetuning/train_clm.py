@@ -455,7 +455,7 @@ def main():
     model = AutoModelForCausalLM.from_pretrained(
         model_args.model_name_or_path,
         config=config,
-        low_cpu_mem_usage=True,
+        #low_cpu_mem_usage=True,
         torch_dtype=model_args.torch_dtype,  # float16 is not stable for fake quant
         token=model_args.token,
     )
