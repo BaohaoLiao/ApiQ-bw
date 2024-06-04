@@ -1,12 +1,14 @@
 #!/bin/bash
 
-MODEL=LoftQ/Llama-2-7b-hf-4bit-64rank
-OUTPUT_DIR=./exp_results/gsm8k
+MODEL=ApiQ/Llama-2-7b-hf-w4g64r64
+OUTPUT_DIR=./exp_results/gsm8k/Llama-2-7b-hf-w4g64r64
 
-torchrun --nproc_per_node=1 train_gsm8k.py \
+
+torchrun --nproc_per_node=1 finetuning/train_gsm8k.py \
   --model_name_or_path $MODEL \
   --learning_rate 3e-4 \
   --seed 11 \
+  --expt_name llama2_7b_3bit_64rank_fake \
   --output_dir $OUTPUT_DIR \
   --num_train_epochs 6 \
   --per_device_train_batch_size 2 \

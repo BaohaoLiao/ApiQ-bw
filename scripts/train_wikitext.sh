@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MODEL=LoftQ/Llama-2-7b-hf-4bit-64rank
+MODEL=ApiQ/Llama-2-7b-hf-w4g64r64
 OUTPUT_DIR=./exp_results/wikitext-2
 
 
