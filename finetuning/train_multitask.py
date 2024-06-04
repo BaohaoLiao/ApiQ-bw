@@ -256,15 +256,15 @@ def main():
         attn_implementation=model_args.attn_implementation
     )
     model = AutoModelForCausalLM.from_pretrained(
-            model_args.model_name_or_path,
-            config=config,
-            low_cpu_mem_usage=True,
-            torch_dtype=torch.bfloat16,
-            cache_dir=model_args.cache_dir,
-            revision=model_args.model_revision,
-            token=model_args.token,
-            trust_remote_code=model_args.trust_remote_code,
-        )
+        model_args.model_name_or_path,
+        config=config,
+        low_cpu_mem_usage=True,
+        torch_dtype=torch.bfloat16,
+        cache_dir=model_args.cache_dir,
+        revision=model_args.model_revision,
+        token=model_args.token,
+        trust_remote_code=model_args.trust_remote_code,
+    )
 
     if training_args.gradient_checkpointing:
         logger.info("Use gradient checkpointing with LoRA.")
