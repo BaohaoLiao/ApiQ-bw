@@ -79,10 +79,6 @@ class TrainingArguments(transformers.TrainingArguments):
         default=512,
         metadata={"help": "Maximum sequence length. Sequences will be right padded (and possibly truncated)."},
     )
-    expt_name: str = field(
-        default="default",
-        metadata={"help": "Experiment name"},
-    )
 
 
 def smart_tokenizer_and_embedding_resize(
@@ -272,14 +268,6 @@ def train():
     )
 
     data_module = make_supervised_data_module(tokenizer=tokenizer, data_args=data_args)
-    training_args.output_dir = os.path.join(
-        training_args.output_dir,
-        training_args.expt_name,
-        model_args.model_name_or_path.split('/')[-1],
-        f"ep_{int(training_args.num_train_epochs)}",
-        f"lr_{training_args.learning_rate}",
-        f"seed_{training_args.seed}",
-    )
     trainer = Trainer(model=model, tokenizer=tokenizer, args=training_args, **data_module)
     trainer.train()
     trainer.save_state()

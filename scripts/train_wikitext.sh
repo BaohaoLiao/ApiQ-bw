@@ -4,7 +4,7 @@ MODEL=LoftQ/Llama-2-7b-hf-4bit-64rank
 OUTPUT_DIR=./exp_results/wikitext-2
 
 
-python finetuning/train_clm.py \
+torchrun --nproc_per_node=1 finetuning/train_clm.py \
     --model_name_or_path $MODEL \
     --output_dir $OUTPUT_DIR \
     --learning_rate 3e-4  \
