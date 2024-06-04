@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TASK=commonsense
+TASK=commonsense # or "math"
 MODEL=ApiQ/Llama-2-7b-hf-w4g64r64
 DATA_DIR=./dataset
 OUTPUT_DIR=./exp_results/commonsense/Llama-2-7b-hf-w3g64r64
@@ -9,6 +9,7 @@ mkdir -p $OUTPUT_DIR
 torchrun --nproc_per_node=1 finetuning/train_multitask.py \
     --do_train \
     --do_eval \
+    --bf16 true \
     --model_name_or_path $MODEL \
     --task $TASK \
     --data_dir $DATA_DIR \
