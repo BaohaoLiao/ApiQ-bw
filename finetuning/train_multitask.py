@@ -233,7 +233,6 @@ def main():
         max_n_example=data_args.max_train_samples,
     )
     trigger_tokens = train_dataset.trigger_tokens
-    num_labels = train_dataset.num_labels
 
     all_eval_datasets = {}
     for eval_dataset in eval_datasets:
@@ -353,14 +352,6 @@ def main():
     # Evaluate
     if training_args.do_eval:
         logger.info("*** Evaluate ***")
-        if model_args.ckpt_path_for_eval is not None:
-            logger.info(f"Load trained ckpt from {model_args.ckpt_path_for_eval}")
-            state_dict = {}
-            with safe_open(os.path.join(model_args.ckpt_path_for_eval, "model.safetensors"), framework="pt", device=0) as f:
-                for k in f.keys():
-                    state_dict[k] = f.get_tensor(k)
-            model.load_state_dict(state_dict, strict=True)
-
         model.eval()
         eval_results = {}
         for dataset_name in eval_datasets:
