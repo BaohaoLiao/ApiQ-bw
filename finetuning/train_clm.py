@@ -136,24 +136,21 @@ class ModelArguments:
             )
         },
     )
-    torch_dtype: Optional[str] = field(
-        default="torch.bfloat16",
-        metadata={
-            "help": (
-                "Override the default `torch.dtype` and load the model under this dtype. If `auto` is passed, the "
-                "dtype will be automatically derived from the model's weights."
-            ),
-            "choices": ["auto", "torch.bfloat16", "torch.float16", "torch.float32"],
-        },
-    )
     low_cpu_mem_usage: bool = field(
-        default=False,
+        default=True,
         metadata={
             "help": (
                 "It is an option to create the model as an empty shell, then only materialize its parameters when the pretrained weights are loaded. "
                 "set True will benefit LLM loading time and RAM consumption."
             )
         },
+    )
+    full_precision: bool = field(
+        default=False,
+        metadata={"help": "True: real quantization"
+                          "False: Use quantization equivalent fp16/fp32 weights."
+                          "Note: Set False for data parallel training"
+                  },
     )
     adapter_name_or_path: Optional[str] = field(
         default=None,
@@ -452,11 +449,18 @@ def main():
         model_args.model_name_or_path, 
         attn_implementation=model_args.attn_implementation
     )
+    if training_args.do_train:
+        config.quantization_
+    low_cpu_mem_usage = model_args.low_cpu_mem_usage
+    if model_args.full_precision:
+        torch_dtype = torch.bfloat16 # float16 is not stable for fake quant
+    else:
+        low_cpu_mem_usage = False # thow error if set to true
     model = AutoModelForCausalLM.from_pretrained(
         model_args.model_name_or_path,
         config=config,
-        #low_cpu_mem_usage=True,
-        torch_dtype=torch.float16,  # float16 is not stable for fake quant
+        low_cpu_mem_usage=low_cpu_mem_usage,
+        torch_dtype=torch.bfloat16,  
         token=model_args.token,
     )
 

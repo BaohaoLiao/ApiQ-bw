@@ -90,6 +90,7 @@ def calibrate(model, args, dataloader, logging=None):
     # same input for the first layer of fp model and quant model
     quant_inps = inps
     fp_inps = copy.deepcopy(inps)   # take output of fp model as input
+    fp_inps_2 = copy.deepcopy(inps) if args.aug_loss else None # qlayer and layer use the same quant_inps
     
     attention_mask = cache["attention_mask"]
     if attention_mask is not None:
@@ -131,6 +132,12 @@ def calibrate(model, args, dataloader, logging=None):
                             attention_mask=attention_mask,
                             position_ids=position_ids
                         )[0]
+                        if args.aug_loss:
+                            fp_inps_2[j] = qlayer(
+                                quant_inps[j].unsqueeze(0), 
+                                attention_mask=attention_mask,
+                                position_ids=position_ids
+                            )[0]
 
         if args.resume:
             qlayer.load_state_dict(lwc_parameters[i], strict=False)
@@ -160,6 +167,8 @@ def calibrate(model, args, dataloader, logging=None):
                             position_ids=position_ids
                         )[0]
                         loss = loss_func(fp_inps[index:index+args.batch_size,], quant_out)
+                        if args.aug_loss:
+                            loss += loss_func(fp_inps_2[index:index+args.batch_size,], quant_out)
 
                     if not math.isfinite(loss.item()):
                         logging.info("Loss is NAN, stopping training")
@@ -236,6 +245,7 @@ def calibrate(model, args, dataloader, logging=None):
     del inps
     del quant_inps
     del fp_inps
+    del fp_inps_2
     torch.cuda.empty_cache()
     gc.collect()                    
     model.config.use_cache = use_cache

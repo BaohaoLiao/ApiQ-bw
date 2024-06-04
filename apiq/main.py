@@ -187,6 +187,7 @@ def arg_parse():
     parser.add_argument("--peft_wd", type=float, default=0.1, help="Weight decay for PEFT parameters")
     parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--batch_size", type=int, default=1)
+    parser.add_argument("--aug_loss", default=False, action="store_true", help="calculate additional loss with same quant input")
     # Output
     parser.add_argument("--cache_dir", default="./cache", type=str, help="Cache dir of dataset, leading to faster debug")
     parser.add_argument("--resume", type=str, default=None)
