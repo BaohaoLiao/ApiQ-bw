@@ -5,6 +5,7 @@ import warnings
 import logging
 from dataclasses import dataclass, field
 from typing import Optional
+import numpy as np
 
 import torch
 import datasets
@@ -353,39 +354,74 @@ def main():
     if training_args.do_eval:
         logger.info("*** Evaluate ***")
         model.eval()
-        eval_results = {}
-        for dataset_name in eval_datasets:
-            # split evalset into chunks
-            for split, (eval_dataset, data_items) in eval_datasets[dataset_name].items():
-                generations, stats = compute_metrics(
-                    data_args.task, 
-                    dataset_name, 
-                    model, 
-                    tokenizer, 
-                    eval_dataset, 
-                    data_items,
-                    trigger_tokens, 
-                    None, 
-                    training_args.per_device_eval_batch_size, 
-                    None,
-                    split, 
-                    data_args.greedy_decoding, 
-                    data_args.temperature,
-                    data_args.top_p, 
-                    data_args.top_k
-                )
+        assert next(model.parameters()).is_cuda
 
-                # log
-                eval_results.update(stats)
-                generations = stats if generations is None else generations
-                result_json_file_name = f"{training_args.output_dir}/{dataset_name}_{split}_outputs.json"
-                with open(result_json_file_name, 'w') as json_file:
-                    json.dump(generations, json_file, indent=4)
+        def list_directories_with_prefix(path, prefix):
+            if not os.path.isdir(path):
+                logger.info("The specified path is not a directory")
+                return []
+            all_entries = os.listdir(path)
+            directories_with_prefix = [entry for entry in all_entries 
+                                    if os.path.isdir(os.path.join(path, entry)) and entry.startswith(prefix)]
+            directories_sorted = sorted(
+                directories_with_prefix, 
+                key=lambda name: int(name[len(prefix):])
+            )
+            return directories_sorted
+        
+        ckpt_dirs = list_directories_with_prefix(training_args.output_dir, 'checkpoint-')
+        ckpt_dirs = [os.path.join(training_args.output_dir, ckpt_dir) for ckpt_dir in ckpt_dirs]
+        logger.info(f"Checkpoints: {ckpt_dirs}")
 
-        # log final eval stats
-        result_json_file_name = f"{training_args.output_dir}/eval_results.json"
+        all_eval_results = {}
+        for ckpt_dir in ckpt_dirs:
+            ckpt_path =  os.path.join(ckpt_dir, "adapter_model.safetensors")
+            logger.info(f"Load trained ckpt from {ckpt_path}")
+            state_dict = {}
+            with safe_open(ckpt_path, framework="pt", device=0) as f:
+                for k in f.keys():
+                    state_dict[k] = f.get_tensor(k)
+            model.load_state_dict(state_dict, strict=False)
+
+            eval_results = {}
+            for dataset_name in eval_datasets:
+                # split evalset into chunks
+                for split, (eval_dataset, data_items) in eval_datasets[dataset_name].items():
+                    generations, stats = compute_metrics(
+                        data_args.task, 
+                        dataset_name, 
+                        model, 
+                        tokenizer, 
+                        eval_dataset, 
+                        data_items,
+                        trigger_tokens, 
+                        None, 
+                        training_args.per_device_eval_batch_size, 
+                        None,
+                        split, 
+                        data_args.greedy_decoding, 
+                        data_args.temperature,
+                        data_args.top_p, 
+                        data_args.top_k
+                    )
+
+                    # log
+                    eval_results.update(stats)
+                    generations = stats if generations is None else generations
+                    result_json_file_name = f"{ckpt_dir}/{dataset_name}_{split}_outputs.json"
+                    with open(result_json_file_name, 'w') as json_file:
+                        json.dump(generations, json_file, indent=4)
+
+            # log final eval stats
+            result_json_file_name = f"{ckpt_dir}/eval_results.json"
+            with open(result_json_file_name, 'w') as json_file:
+                json.dump(eval_results, json_file, indent=4)
+
+            all_eval_results[ckpt_dir] = np.mean(list(eval_results.values()))
+        result_json_file_name = f"{training_args.output_dir}/all_eval_results.json"
         with open(result_json_file_name, 'w') as json_file:
-            json.dump(eval_results, json_file, indent=4)
+                json.dump(all_eval_results, json_file, indent=4)
+
 
 if __name__ == "__main__":
     main()
