@@ -56,7 +56,7 @@ def get_ptb(tokenizer, nsamples, seed, seqlen):
 
 
 def get_c4(tokenizer, nsamples, seed, seqlen):
-    print("get_c4")
+    print("get c4")
     traindata = load_dataset(
         'allenai/c4', data_files={'train': 'en/c4-train.00000-of-01024.json.gz'}, split='train'
     )
