@@ -2,7 +2,7 @@ import os
 from tqdm import tqdm
 import torch
 import torch.nn as nn
-from data_utils import get_loaders
+from apiq.data_utils import get_loaders
 
 @torch.no_grad()
 def evaluate(model, tokenizer, args, logging):
