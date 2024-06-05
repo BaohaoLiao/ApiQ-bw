@@ -1,4 +1,4 @@
-from finetuning_offline.train_gsm8k import main
+from finetuning_offline.test_gsm8k import main
 
 if __name__ == "__main__":
     main()
