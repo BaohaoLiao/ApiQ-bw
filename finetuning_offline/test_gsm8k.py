@@ -73,6 +73,9 @@ class ModelArguments:
 class DataArguments:
     data_name: str = field(default="gsm8k", metadata={"help": "Dataset name."})
     batch_size: int = field(default=16, metadata={"help": "Evaluation batch size."})
+    dataset_dir: Optional[str] = field(
+        default=None, metadata={"help": "The local dir for dataset for offline training."}
+    )
 
 
 def smart_tokenizer_and_embedding_resize(
