@@ -11,9 +11,14 @@ import transformers
 from torch.utils.data import Dataset
 from transformers import Trainer
 
-
 from peft import PeftModel, LoraConfig, TaskType, get_peft_model
 from datasets import load_dataset
+
+
+logging.basicConfig(
+    format='%(asctime)s %(levelname)-8s %(message)s',
+    level=logging.INFO,
+    datefmt='%Y-%m-%d %H:%M:%S')
 
 
 IGNORE_INDEX = -100
@@ -210,6 +215,16 @@ def train():
         torch_dtype=torch.bfloat16,
         token=model_args.token,
     )
+
+    if training_args.gradient_checkpointing:
+        logging.info("Use gradient checkpointing with LoRA.")
+        if hasattr(model, "enable_input_require_grads"):
+            model.enable_input_require_grads()
+        else:
+            def make_inputs_require_grad(module, input, output):
+                output.requires_grad_(True)
+            model.get_input_embeddings().register_forward_hook(make_inputs_require_grad)
+        model.gradient_checkpointing_enable()
     
     ## Peft
     if model_args.lora_init:
@@ -240,8 +255,8 @@ def train():
             is_trainable=True,
             token=model_args.token,
         )
-    print(model)
-    print(model.print_trainable_parameters())
+    logging.info(model)
+    logging.info(model.print_trainable_parameters())
 
     tokenizer = transformers.AutoTokenizer.from_pretrained(
         model_args.model_name_or_path,
