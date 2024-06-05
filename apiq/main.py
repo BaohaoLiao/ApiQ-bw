@@ -203,6 +203,7 @@ def arg_parse():
     args = parser.parse_args()
     return args
 
+
 def cli_main():
     args = arg_parse()
     args = arg_parse()
