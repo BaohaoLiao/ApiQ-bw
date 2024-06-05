@@ -263,7 +263,7 @@ def compute_accuracy(pred: list, gold: list):
     return acc / len(pred)
 
 
-if __name__ == "__main__":
+def main():
     parser = transformers.HfArgumentParser((ModelArguments, DataArguments))
     model_args, data_args = parser.parse_args_into_dataclasses()
     if model_args.ckpt_dir is not None:
@@ -280,3 +280,7 @@ if __name__ == "__main__":
         logging.info(f"Evaluate {adapter_path}")
         model_args.adapter_name_or_path = adapter_path
         evaluation(model_args, data_args)
+
+
+if __name__ == "__main__":
+    main()
