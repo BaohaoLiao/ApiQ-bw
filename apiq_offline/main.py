@@ -206,8 +206,13 @@ def arg_parse():
     return args
 
 
-if __name__ == "__main__":
+def cli_main():
+    args = arg_parse()
     args = arg_parse()
     logging.info(sys.argv)
     logging.info(args)
     main(args)
+
+
+if __name__ == "__main__":
+    cli_main()
