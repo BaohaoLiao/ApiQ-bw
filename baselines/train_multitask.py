@@ -280,7 +280,7 @@ def main():
         model = AutoModelForCausalLM.from_pretrained(
             model_args.model_name_or_path,
             config=config,
-            low_cpu_mem_usage=True,
+            low_cpu_mem_usage=False,
             torch_dtype=torch.bfloat16,
             cache_dir=model_args.cache_dir,
             revision=model_args.model_revision,
