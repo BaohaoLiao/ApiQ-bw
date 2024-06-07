@@ -107,6 +107,12 @@ class ModelArguments:
             "help": "Use QLoRA."
         },
     )
+    loftq: bool = field(
+        default=False,
+        metadata={
+            "help": "Use loftq."
+        },
+    )
 
 
 @dataclass
@@ -319,7 +325,7 @@ def main():
             is_trainable=True,
             token=model_args.token,
         )
-    else:
+    elif not model_args.loftq:
         model = PeftModel.from_pretrained(
             model,
             model_args.model_name_or_path,
