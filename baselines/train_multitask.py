@@ -107,12 +107,6 @@ class ModelArguments:
             "help": "Use QLoRA."
         },
     )
-    loftq: bool = field(
-        default=False,
-        metadata={
-            "help": "Use loftq."
-        },
-    )
 
 
 @dataclass
@@ -306,6 +300,7 @@ def main():
 
     # PEFT
     if model_args.lora_init:
+        logger.info("Initialize LoRA in a default way")
         task_type = TaskType.CAUSAL_LM
         target_modules = ["q_proj", "k_proj", "v_proj", "o_proj", "up_proj", "down_proj", "gate_proj"]
         lora_config = LoraConfig(
@@ -319,13 +314,15 @@ def main():
         )
         model = get_peft_model(model, lora_config)
     elif model_args.adapter_name_or_path is not None:
+        logger.info(f"Initialize LoRA from {model_args.adapter_name_or_path}")
         model = PeftModel.from_pretrained(
             model,
             model_args.adapter_name_or_path,
             is_trainable=True,
             token=model_args.token,
         )
-    elif not model_args.loftq:
+    else:
+        logger.info(f"Initialize LoRA from {model_args.model_name_or_path}/apiq_init")
         model = PeftModel.from_pretrained(
             model,
             model_args.model_name_or_path,
