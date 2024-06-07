@@ -386,6 +386,7 @@ def main():
                     json.dump(generations, json_file, indent=4)
 
         # log final eval stats
+        eval_results["mean"] = np.mean(list(eval_results.values()))
         result_json_file_name = f"{training_args.output_dir}/eval_results.json"
         with open(result_json_file_name, 'w') as json_file:
             json.dump(eval_results, json_file, indent=4)
