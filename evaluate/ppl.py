@@ -34,12 +34,11 @@ def main(args):
     )
     assert args.seqlen <= model.config.max_position_embeddings, "The sequence length of calibration samples exceed the model's"
 
-    """
     model = peft.PeftModel.from_pretrained(
         model,
         args.adapter_path,
         is_trainable=False,
-        inference=True
+        inference_mode=True,
     )
     """
     task_type = peft.TaskType.CAUSAL_LM
@@ -54,7 +53,7 @@ def main(args):
         init_lora_weights=True,
     )
     model = peft.get_peft_model(model, lora_config)
-
+    """
 
     logging.info(model)
     model.eval()
