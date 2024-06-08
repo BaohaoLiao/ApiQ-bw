@@ -206,7 +206,6 @@ def arg_parse():
 
 def cli_main():
     args = arg_parse()
-    args = arg_parse()
     logging.info(sys.argv)
     logging.info(args)
     main(args)
