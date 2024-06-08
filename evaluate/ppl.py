@@ -20,11 +20,9 @@ def main(args):
 
     # Load model and tokenizer
     args.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    config = transformers.AutoConfig.from_pretrained(args.model_name_or_path, attn_implementation=args.attn_implementation)
     tokenizer = transformers.AutoTokenizer.from_pretrained(args.model_name_or_path, use_fast=False, legacy=False)
     model = transformers.AutoModelForCausalLM.from_pretrained(
-        args.model_name_or_path, 
-        config=config, 
+        args.model_name_or_path,
         device_map='auto', 
         torch_dtype=torch.bfloat16,
         quantization_config=transformers.BitsAndBytesConfig(
