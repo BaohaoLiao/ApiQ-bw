@@ -32,7 +32,7 @@ def main(args):
                 bnb_4bit_quant_type='nf4',
             ),
     )
-    assert args.seqlen <= config.max_position_embeddings, "The sequence length of calibration samples exceed the model's"
+    assert args.seqlen <= model.config.max_position_embeddings, "The sequence length of calibration samples exceed the model's"
 
     """
     model = peft.PeftModel.from_pretrained(
