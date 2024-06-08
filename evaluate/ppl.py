@@ -5,7 +5,7 @@ import torch
 import transformers
 import peft
 
-from apiq.evaluate import evaluate
+from evaluate.evaluate import evaluate
 from apiq.main import MODEL_FAMILY
 
 logging.basicConfig(
