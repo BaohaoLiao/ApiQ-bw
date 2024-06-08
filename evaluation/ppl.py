@@ -25,12 +25,12 @@ def main(args):
         args.model_name_or_path,
         device_map='auto', 
         torch_dtype=torch.bfloat16,
-        quantization_config=transformers.BitsAndBytesConfig(
-                load_in_4bit=True,
-                bnb_4bit_compute_dtype=torch.bfloat16,
-                bnb_4bit_use_double_quant=False,
-                bnb_4bit_quant_type='nf4',
-            ),
+        #quantization_config=transformers.BitsAndBytesConfig(
+        #        load_in_4bit=True,
+        #        bnb_4bit_compute_dtype=torch.bfloat16,
+        #        bnb_4bit_use_double_quant=False,
+        #        bnb_4bit_quant_type='nf4',
+        #    ),
     )
     assert args.seqlen <= model.config.max_position_embeddings, "The sequence length of calibration samples exceed the model's"
 
