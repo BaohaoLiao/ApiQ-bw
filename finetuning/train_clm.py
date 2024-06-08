@@ -31,7 +31,7 @@ from itertools import chain
 from typing import Optional
 
 import datasets
-import evaluate
+import evaluation
 import torch
 from datasets import load_dataset
 
@@ -631,7 +631,7 @@ def main():
                 logits = logits[0]
             return logits.argmax(dim=-1)
 
-        metric = evaluate.load("accuracy")
+        metric = evaluation.load("accuracy")
 
         def compute_metrics(eval_preds):
             preds, labels = eval_preds
