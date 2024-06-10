@@ -74,10 +74,10 @@ def get_lwc_parameters(model):
     return iter(params)
 
 def get_peft_parameters(model, peft_method):
-    if peft_method == "LoRA":
+    if peft_method == "LoRA" or peft_method == "DoRA":
         key = "lora"
     else:
-        raise ValueError("Only support LoRA.")
+        raise ValueError("Only support LoRA and DoRA for now")
     params = []
     for n, m in model.named_parameters():
         if n.find(key) > -1:
@@ -85,10 +85,10 @@ def get_peft_parameters(model, peft_method):
     return iter(params)
 
 def get_apiq_parameters(model, peft_method):
-    if peft_method == "LoRA":
+    if peft_method == "LoRA" or peft_method == "DoRA":
         key = "lora"
     else:
-        raise ValueError("Only support LoRA.")
+        raise ValueError("Only support LoRA and DoRA for now")
     params = []
     for n, m in model.named_parameters():
         if n.find('bound_factor') > -1 or n.find(key) > -1:
@@ -104,14 +104,14 @@ def lwc_state_dict(model, destination=None, prefix='', keep_vars=False):
     return destination
 
 def peft_state_dict(model, peft_method, destination=None, prefix='', keep_vars=False):
-    if peft_method == "LoRA":
+    if peft_method == "LoRA" or peft_method == "DoRA":
         key = "lora"
     else:
-        raise ValueError("Only support LoRA.")
+        raise ValueError("Only support LoRA and DoRA for now")
     if destination is None:
         destination = OrderedDict()
     for name, param in model.named_parameters():
-        if name.find('lora') > -1:
+        if name.find(key) > -1:
             destination[prefix + name] = param if keep_vars else param.detach()
     return destination
 
