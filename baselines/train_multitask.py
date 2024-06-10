@@ -93,6 +93,10 @@ class ModelArguments:
         default=False,
         metadata={"help": "True: Use zero and gaussian initialization; False: Load adapters from LoftQ in HF hub."},
     )
+    dora_init: bool = field(
+        default=False,
+        metadata={"help": ""},
+    )
     rank: int = field(
         default=64,
         metadata={"help": "Rank of LoRA adapters. LoftQ does not require this config. Used for fp16 LoRA or QLoRA."},
@@ -311,6 +315,21 @@ def main():
             lora_dropout=0.1,
             target_modules=target_modules,
             init_lora_weights=True,
+        )
+        model = get_peft_model(model, lora_config)
+    elif model_args.dora_init:
+        logger.info("Initialize DoRA in a default way")
+        task_type = TaskType.CAUSAL_LM
+        target_modules = ["q_proj", "k_proj", "v_proj", "o_proj", "up_proj", "down_proj", "gate_proj"]
+        lora_config = LoraConfig(
+            task_type=task_type,
+            inference_mode=False,
+            r=model_args.rank,
+            lora_alpha=model_args.lora_alpha,
+            lora_dropout=0.1,
+            target_modules=target_modules,
+            init_lora_weights=True,
+            use_dora=True,
         )
         model = get_peft_model(model, lora_config)
     elif model_args.adapter_name_or_path is not None:
