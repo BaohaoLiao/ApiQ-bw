@@ -25,7 +25,7 @@ class UniformAffineQuantizer(nn.Module):
         disable_zero_point = False,
     ):
         super().__init__()
-        assert 2 <= n_bits <= 16, "bitwidth not supported"
+        assert 1 <= n_bits <= 16, "bitwidth not supported"
         assert shape[-1] % group_size == 0, "group size should be divisible by the in_feature"
         self.symmetric = symmetric
         self.disable_zero_point = disable_zero_point
