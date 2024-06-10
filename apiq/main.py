@@ -102,7 +102,7 @@ def main(args):
     logging.info(f"Time for quantization: {time.time() - tick} s")
     evaluate(model, tokenizer, args, logging)
 
-    if not args.resume:
+    if args.resume is not None:
         logging.info(f"Save fake quant model, i.e. the quant weight is in fp16. For real quant model, use --convert_to_gptq after quantization.")
         model.save_pretrained(os.path.join(args.save_dir, "apiq_init")) # save adapter weights
         model.unload()
