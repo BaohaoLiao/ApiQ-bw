@@ -74,6 +74,12 @@ def main(args):
         target_modules = ["q_proj", "k_proj", "v_proj", "o_proj", "up_proj", "gate_proj", "down_proj"]
         peft_config = peft.LoraConfig(task_type="CAUSAL_LM", inference_mode=False, target_modules=target_modules,  **peft_config_kwargs)
         model = peft.get_peft_model(model, peft_config)
+    elif args.peft_method == "DoRA":
+        target_modules = ["q_proj", "k_proj", "v_proj", "o_proj", "up_proj", "gate_proj", "down_proj"]
+        peft_config_kwargs["use_dora"] = True
+        peft_config = peft.LoraConfig(task_type="CAUSAL_LM", inference_mode=False, target_modules=target_modules,  **peft_config_kwargs)
+        model = peft.get_peft_model(model, peft_config)
+
 
     assert isinstance(model.base_model.model, (LlamaPreTrainedModel, MistralPreTrainedModel))
 
@@ -159,7 +165,7 @@ def arg_parse():
     # Model
     parser.add_argument("--model_name_or_path", type=str)
     #parser.add_argument("--target_modules", type=str, required=True)
-    parser.add_argument("--peft_method", type=str, default="LoRA", choices=["LoRA"])
+    parser.add_argument("--peft_method", type=str, default="LoRA", choices=["LoRA", "DoRA"])
     parser.add_argument("--peft_args", type=str, default='{"lora_alpha": 16, "r": 64, "lora_dropout": 0}')
     parser.add_argument(
         "--attn_implementation", type=str, required=False, default="eager", choices=["eager", "sdpa", "flash_attention_2"],
@@ -171,7 +177,7 @@ def arg_parse():
     parser.add_argument("--seqlen", type=int, default=1024, help="Sequence length of calibration sample")
     # Quantization
     parser.add_argument("--lwc", default=False, action="store_true", help="activate learnable weight clipping")
-    parser.add_argument("--wbits", type=int, default=4, choices=[2, 3, 4], help="Weight bit-width")
+    parser.add_argument("--wbits", type=int, default=4, choices=[1, 2, 3, 4], help="Weight bit-width")
     parser.add_argument("--group_size", type=int, default=None)
     parser.add_argument("--symmetric", default=False, action="store_true", help="Symmetric quantization")
     parser.add_argument("--disable_zero_point", default=False, action="store_true", help="Quantization without zero_point")
