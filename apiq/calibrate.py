@@ -82,7 +82,7 @@ def calibrate(model, args, dataloader, logging=None):
     # move embedding layer and first layer to cpu
     layers[0] = layers[0].module
     layers[0] = layers[0].cpu()
-    if "llama" in args.model_family or "mistral" in args.model_family:
+    if "llama" in args.model_family or "mistral" in args.model_family or "meta" in args.model_family:
         model.base_model.model.model.embed_tokens = model.base_model.model.model.embed_tokens.cpu()
         model.base_model.model.model.norm = model.base_model.model.model.norm.cpu()
     else:
