@@ -35,11 +35,13 @@ def calibrate(model, args, dataloader, logging=None):
     model.config.use_cache = False
 
     is_llama = False
-    if ("llama" in args.model_family) or ("mistral" in  args.model_family):
+    if ("llama" in args.model_family) or ("mistral" in  args.model_family) or ("meta" in  args.model_family):
         is_llama = True
         layers = model.base_model.model.model.layers
         model.base_model.model.model.embed_tokens = model.base_model.model.model.embed_tokens.to(args.device)
         model.base_model.model.model.norm = model.base_model.model.model.norm.to(args.device)
+        if "meta" in  args.model_family:
+            model.base_model.model.model.rotary_emb = model.base_model.model.model.rotary_emb.to(args.device)
     else:
         raise ValueError("Only support llama/mistral now")
     

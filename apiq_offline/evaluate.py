@@ -7,7 +7,7 @@ from apiq.data_utils import get_loaders
 def evaluate(model, tokenizer, args, logging):
     logging.info("=== start evaluation ===")
     results = {}
-    if "llama" in args.model_family or "mistral" in args.model_family:
+    if "llama" in args.model_family or "mistral" in args.model_family or "meta" in args.model_family:
         model = model.to(args.device)
     else:
         raise ValueError("Only support llama/mistral")
@@ -40,7 +40,7 @@ def evaluate(model, tokenizer, args, logging):
             for i in range(nsamples):
                 batch = testenc[:, (i * args.seqlen) : ((i + 1) * args.seqlen)].to(args.device)
                 # TODO: check
-                if "llama" in args.model_family or "mistral" in args.model_family:
+                if "llama" in args.model_family or "mistral" in args.model_family or "meta" in args.model_family:
                     outputs = model.base_model.model.model(batch)
                 hidden_states = outputs[0]
                 logits = model.base_model.model.lm_head(hidden_states)
