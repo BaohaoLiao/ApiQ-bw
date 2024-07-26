@@ -113,6 +113,7 @@ def main(args):
     logging.info(f"Time for quantization: {time.time() - tick} s")
     evaluate(model, tokenizer, args, logging)
 
+    """
     if not args.resume:
         logging.info(f"Save fake quant model, i.e. the quant weight is in fp16. For real quant model, use --convert_to_gptq after quantization.")
         model.save_pretrained(os.path.join(args.save_dir, "apiq_init")) # save adapter weights
@@ -123,7 +124,8 @@ def main(args):
                     del module.weight_quantizer
         model.base_model.save_pretrained(args.save_dir) # save base model (fake quant)
         tokenizer.save_pretrained(args.save_dir)
-   
+    """
+        
     if args.convert_to_gptq:
         logging.info(f"Save base model in gptq type.")
         ## manually save config
