@@ -18,7 +18,7 @@ from transformers.models.llama.modeling_llama import LlamaPreTrainedModel
 from transformers.models.mistral.modeling_mistral import MistralPreTrainedModel
 
 from apiq.model_utils import quantize_llama_like
-from apiq.data_utils import get_loaders
+from apiq_offline.data_utils import get_loaders
 from apiq.calibrate import calibrate
 from apiq_offline.evaluate import evaluate
 from apiq.quant_linear import QuantLinear
