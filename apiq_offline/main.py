@@ -85,6 +85,7 @@ def main(args):
     # Quantization 
     logging.info("=== start quantization ===")
     tick = time.time() 
+    """
     cache_dataloader = f'{args.cache_dir}/dataloader_{args.model_name_or_path.split("/")[-1]}_{args.calib_dataset}_n{args.nsamples}len{args.seqlen}.cache'
     if os.path.exists(cache_dataloader):
         dataloader = torch.load(cache_dataloader)
@@ -97,7 +98,16 @@ def main(args):
             seed=args.seed,
             seqlen=args.seqlen,
         )
-        torch.save(dataloader, cache_dataloader)    
+        torch.save(dataloader, cache_dataloader)
+    """
+    dataloader, _ = get_loaders(
+        args.calib_dataset,
+        tokenizer,
+        args.cache_dir,
+        nsamples=args.nsamples,
+        seed=args.seed,
+        seqlen=args.seqlen,
+    )
 
     calibrate(model, args, dataloader, logging=logging)
     logging.info(f"Time for quantization: {time.time() - tick} s")
