@@ -1,7 +1,7 @@
 import os
 import torch
 import torch.nn as nn
-from apiq.data_utils import get_loaders
+from apiq_offline.data_utils import get_loaders
 
 @torch.no_grad()
 def evaluate(model, tokenizer, args, logging):
@@ -14,18 +14,21 @@ def evaluate(model, tokenizer, args, logging):
     
     if args.eval_ppl:
         for dataset in ["wikitext2", "c4"]:
+            """
             cache_testloader = f'{args.cache_dir}/testloader_{args.model_name_or_path.split("/")[-1]}_{dataset}_all.cache'
             if os.path.exists(cache_testloader):
                 testloader = torch.load(cache_testloader)
                 logging.info(f"load calibration from {cache_testloader}")
             else:
-                dataloader, testloader = get_loaders(
-                    dataset,
-                    tokenizer,
-                    seed=args.seed,
-                    seqlen=2048,
-                )
-                torch.save(testloader, cache_testloader)
+            """
+            dataloader, testloader = get_loaders(
+                dataset,
+                tokenizer,
+                args.cache_dir,
+                seed=args.seed,
+                seqlen=2048,
+            )
+            #torch.save(testloader, cache_testloader)
 
             if "c4" in dataset:
                 testenc = testloader
